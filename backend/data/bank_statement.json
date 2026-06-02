@@ -1,0 +1,360 @@
+{
+  "statement_date": "2025-06-30",
+  "statement_number": "20250630-001",
+  "bank_name": "First National Bank",
+  "account_number": "****5678",
+  "beginning_balance": 125000.00,
+  "ending_balance": 485230.45,
+  "transactions": [
+    {
+      "id": "TXN_20250615_001",
+      "transaction_date": "2025-06-15",
+      "amount": 25000.00,
+      "currency": "USD",
+      "payer_name": "ACME Corporation",
+      "remittance_text": "INV-2025-001234",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250615_002",
+      "transaction_date": "2025-06-15",
+      "amount": 15500.50,
+      "currency": "USD",
+      "payer_name": "TechVentures LLC",
+      "remittance_text": "PO-98765 INV-2025-002345",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250616_001",
+      "transaction_date": "2025-06-16",
+      "amount": 42000.00,
+      "currency": "USD",
+      "payer_name": "Global Manufacturing Inc AP Dept Corp",
+      "remittance_text": "INV-2025-001567 PO-88234",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250616_002",
+      "transaction_date": "2025-06-16",
+      "amount": 8750.25,
+      "currency": "USD",
+      "payer_name": "West Coast Distributors",
+      "remittance_text": "",
+      "payment_type": "CHECK",
+      "check_number": "54321"
+    },
+    {
+      "id": "TXN_20250617_001",
+      "transaction_date": "2025-06-17",
+      "amount": 33000.00,
+      "currency": "USD",
+      "payer_name": "Sunrise Holdings Group",
+      "remittance_text": "INV-2025-003456 advance payment Q3",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250618_001",
+      "transaction_date": "2025-06-18",
+      "amount": 19200.75,
+      "currency": "USD",
+      "payer_name": "Silver Stream Trading",
+      "remittance_text": "INV-2025-004567",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250618_002",
+      "transaction_date": "2025-06-18",
+      "amount": -3000.00,
+      "currency": "USD",
+      "payer_name": "Bank Return R02",
+      "remittance_text": "NSF RETURN",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250619_001",
+      "transaction_date": "2025-06-19",
+      "amount": 52500.00,
+      "currency": "USD",
+      "payer_name": "Eastern Markets Ltd",
+      "remittance_text": "net settlement INV-2025-005678 and INV-2025-005679",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250619_002",
+      "transaction_date": "2025-06-19",
+      "amount": 11250.00,
+      "currency": "USD",
+      "payer_name": "Rapid Logistics",
+      "remittance_text": "INV-2025-006789 partial",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250620_001",
+      "transaction_date": "2025-06-20",
+      "amount": 28900.00,
+      "currency": "USD",
+      "payer_name": "Prime Industries Corp",
+      "remittance_text": "INV-2025-007890",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250620_002",
+      "transaction_date": "2025-06-20",
+      "amount": 6500.00,
+      "currency": "USD",
+      "payer_name": "Pioneer Ventures",
+      "remittance_text": "",
+      "payment_type": "CHECK",
+      "check_number": "54322"
+    },
+    {
+      "id": "TXN_20250621_001",
+      "transaction_date": "2025-06-21",
+      "amount": 45600.00,
+      "currency": "USD",
+      "payer_name": "Nordic Solutions AB",
+      "remittance_text": "EUR payment CHF conversion INV-2025-008901",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250621_002",
+      "transaction_date": "2025-06-21",
+      "amount": 22100.50,
+      "currency": "USD",
+      "payer_name": "Summit Capital Partners",
+      "remittance_text": "INV-2025-009012",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250622_001",
+      "transaction_date": "2025-06-22",
+      "amount": 35000.00,
+      "currency": "USD",
+      "payer_name": "Vertex Manufacturing",
+      "remittance_text": "intercompany netting AR/AP offset",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250622_002",
+      "transaction_date": "2025-06-22",
+      "amount": 14200.00,
+      "currency": "USD",
+      "payer_name": "Zenith Logistics",
+      "remittance_text": "INV-2025-010123",
+      "payment_type": "CHECK",
+      "check_number": "54323"
+    },
+    {
+      "id": "TXN_20250623_001",
+      "transaction_date": "2025-06-23",
+      "amount": 67500.00,
+      "currency": "USD",
+      "payer_name": "Continental Group Holdings",
+      "remittance_text": "subsidiary payment INV-2025-011234",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250623_002",
+      "transaction_date": "2025-06-23",
+      "amount": 9800.00,
+      "currency": "USD",
+      "payer_name": "Dynamic Systems",
+      "remittance_text": "",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250624_001",
+      "transaction_date": "2025-06-24",
+      "amount": 55000.00,
+      "currency": "USD",
+      "payer_name": "Innovative Tech FZCO UAE",
+      "remittance_text": "INV-2025-012345 Trading Ltd",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250624_002",
+      "transaction_date": "2025-06-24",
+      "amount": 18500.00,
+      "currency": "USD",
+      "payer_name": "Quantum Dynamics",
+      "remittance_text": "INV-2025-013456",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250625_001",
+      "transaction_date": "2025-06-25",
+      "amount": 38000.00,
+      "currency": "USD",
+      "payer_name": "Stellar Services Inc",
+      "remittance_text": "CM-00567 credit memo",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250625_002",
+      "transaction_date": "2025-06-25",
+      "amount": 11600.25,
+      "currency": "USD",
+      "payer_name": "Compass Trading",
+      "remittance_text": "INV-2025-014567",
+      "payment_type": "CHECK",
+      "check_number": "54324"
+    },
+    {
+      "id": "TXN_20250626_001",
+      "transaction_date": "2025-06-26",
+      "amount": 29500.00,
+      "currency": "USD",
+      "payer_name": "Apex Financial Group",
+      "remittance_text": "LEGACY-2025-00123 invoice reference",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250626_002",
+      "transaction_date": "2025-06-26",
+      "amount": 16300.00,
+      "currency": "USD",
+      "payer_name": "Titan Resources",
+      "remittance_text": "INV-2025-015678",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250627_001",
+      "transaction_date": "2025-06-27",
+      "amount": 50000.00,
+      "currency": "USD",
+      "payer_name": "Phoenix Capital Partners",
+      "remittance_text": "deposit advance Q3 2025",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250627_002",
+      "transaction_date": "2025-06-27",
+      "amount": 12400.50,
+      "currency": "USD",
+      "payer_name": "Horizon Enterprises",
+      "remittance_text": "INV-2025-016789",
+      "payment_type": "CHECK",
+      "check_number": "54325"
+    },
+    {
+      "id": "TXN_20250628_001",
+      "transaction_date": "2025-06-28",
+      "amount": 41000.00,
+      "currency": "USD",
+      "payer_name": "Royal Industries Ltd",
+      "remittance_text": "INV-2025-017890 PO-77123",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250628_002",
+      "transaction_date": "2025-06-28",
+      "amount": 19900.75,
+      "currency": "USD",
+      "payer_name": "Nexus Solutions",
+      "remittance_text": "",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250629_001",
+      "transaction_date": "2025-06-29",
+      "amount": 75000.00,
+      "currency": "USD",
+      "payer_name": "Titan Global Systems",
+      "remittance_text": "large lump sum settlement INV-2025-018901 INV-2025-018902",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250629_002",
+      "transaction_date": "2025-06-29",
+      "amount": 13200.00,
+      "currency": "USD",
+      "payer_name": "Radiant Energy",
+      "remittance_text": "INV-2025-019012",
+      "payment_type": "CHECK",
+      "check_number": "54326"
+    },
+    {
+      "id": "TXN_20250630_001",
+      "transaction_date": "2025-06-30",
+      "amount": 24500.00,
+      "currency": "USD",
+      "payer_name": "Sterling Electronics",
+      "remittance_text": "INV-2025-020123",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250630_002",
+      "transaction_date": "2025-06-30",
+      "amount": 17800.00,
+      "currency": "USD",
+      "payer_name": "Universal Manufacturing",
+      "remittance_text": "INV-2025-021234 partial payment",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250630_003",
+      "transaction_date": "2025-06-30",
+      "amount": 8300.00,
+      "currency": "USD",
+      "payer_name": "Vision Ventures Inc",
+      "remittance_text": "INV-2025-022345",
+      "payment_type": "CHECK",
+      "check_number": "54327"
+    },
+    {
+      "id": "TXN_20250630_004",
+      "transaction_date": "2025-06-30",
+      "amount": 21000.00,
+      "currency": "USD",
+      "payer_name": "Workflow Solutions",
+      "remittance_text": "prepayment Q3 retainer",
+      "payment_type": "WIRE",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250630_005",
+      "transaction_date": "2025-06-30",
+      "amount": 32500.00,
+      "currency": "USD",
+      "payer_name": "Xtreme Logistics",
+      "remittance_text": "INV-2025-023456",
+      "payment_type": "ACH",
+      "check_number": null
+    },
+    {
+      "id": "TXN_20250630_006",
+      "transaction_date": "2025-06-30",
+      "amount": 5000.00,
+      "currency": "USD",
+      "payer_name": "Yale Capital Group",
+      "remittance_text": "",
+      "payment_type": "WIRE",
+      "check_number": null
+    }
+  ]
+}
