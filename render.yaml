@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: cash-application-foundry-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: USE_FIXTURES
+        value: "true"
+      - key: PORT
+        value: "8080"
+    healthCheckPath: /health

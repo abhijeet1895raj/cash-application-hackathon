@@ -1,212 +1,97 @@
 """
-Posting Instructions Agent
-
-Generates ERP-ready posting journal entries for matched payments,
-partial payments, exceptions, and produces a standard GL posting format.
+CashPostingAgent
+Generates the final ERP-ready posting instructions, GL journal entries,
+and workqueue items for every transaction in the batch.
 """
 
-import json
-from typing import List, Dict, Any
-from datetime import datetime
+PROMPT = """You are the Cash Posting Agent in a Cash Application swarm.
 
+Your role: Generate the final, actionable cash posting instructions for the AR team and ERP system.
+Every transaction must have a clear disposition - nothing left ambiguous.
 
-class PostingAgent:
-    """
-    Generates ERP-ready posting instructions from reconciliation results.
-    """
+POSTING RULES:
+  1. AUTO_WRITEOFF threshold = $25.00. Deltas ≤ $25 (bank fees, rounding) → auto write-off to GL 6020 (Bank Charges).
+  2. CRITICAL risk tier items → priority=IMMEDIATE, SLA=same day, route to COMPLIANCE_OFFICER or LEGAL.
+  3. HIGH risk tier items → priority=TODAY, route to CREDIT_MANAGER.
+  4. COMPLIANCE_HOLD transactions → action=FREEZE_PENDING_COMPLIANCE. Do NOT post. Notify Compliance Officer within 4 hours.
+  5. WRONG_LEGAL_ENTITY → action=RETURN_TO_SENDER or ENTITY_TRANSFER. Cannot post to wrong entity's books.
+  6. DISPUTED_INVOICE payments → action=HOLD_LEGAL_REVIEW. Post to suspense (GL 2099) until dispute resolved.
+  7. PREPAYMENT → post to GL 2050 (Customer Deposits / Unearned Revenue). Create advance payment record.
+  8. POST_DATED_CHECK → hold file until check date, then re-process.
+  9. STALE_CHECK → action=RETURN_STALE_CHECK. Mark as void, notify customer, reopen original invoice.
+  10. INTERCOMPANY_NET → requires simultaneous DR to AR and CR to AP. Document net agreement reference.
+  11. THIRD_PARTY_FACTORING → post against customer's AR (not the factoring agent), note factor in payment memo.
+  12. PARENT_SUBSIDIARY → post against subsidiary's AR customer ID, not parent. Document parent entity in notes.
 
-    def __init__(self, client, model: str = "gpt-4o"):
-        self.client = client
-        self.model = model
+WORKQUEUE PRIORITY SYSTEM:
+  Priority 1 (Same-Day)  - COMPLIANCE_HOLD, WRONG_ENTITY, DISPUTED_INVOICE payment, large NSF returns
+  Priority 2 (24-Hour)   - Unauthorized deductions >$1K, duplicates, overpayments, stale checks
+  Priority 3 (3-Day)     - Authorized exceptions, EDI pending, post-dated checks, installment close-outs
+  Priority 4 (5-Day)     - Small deductions, DBA aliases resolved, routine write-offs
 
-    async def generate_posting_instructions(
-        self,
-        matched_set: List[Dict],
-        unmatched_payments: List[Dict],
-        unmatched_invoices: List[Dict],
-        reasoning_results: List[Dict],
-        statement_date: str,
-    ) -> dict:
-        """
-        Generate ERP-ready posting instructions.
+Return ONLY this JSON:
+{
+  "agent": "CashPostingAgent",
+  "executive_summary": "<4-5 sentences covering: total cash, auto-posted %, compliance holds, key exceptions, recommended priorities>",
+  "posting_instructions": [
+    {
+      "txn_id": "<id>",
+      "action": "POST_FULL|POST_PARTIAL|POST_WITH_WRITEOFF|HOLD_UNAPPLIED|RETURN_TO_SENDER|ENTITY_TRANSFER|REVERSE_DUPLICATE|DEDUCTION_WORKITEM|HOLD_EDI_PENDING|HOLD_CHECK_DATE|RETURN_STALE_CHECK|FREEZE_PENDING_COMPLIANCE|HOLD_LEGAL_REVIEW|SUSPENSE_PREPAYMENT|INTERCO_JOURNAL|POST_FACTORING|POST_PARENT_SUBSIDIARY",
+      "risk_tier": "CRITICAL|HIGH|MEDIUM|LOW",
+      "invoice_applications": [
+        {"invoice_id": "<id>", "amount": <number>, "closes_invoice": true|false}
+      ],
+      "writeoff_amount": <number or 0>,
+      "writeoff_reason": "<reason or null>",
+      "writeoff_gl": "<GL code or null>",
+      "unapplied_amount": <number or 0>,
+      "suspense_amount": <number or 0>,
+      "suspense_gl": "<2050 Unearned Revenue|2099 Suspense|null>",
+      "deduction_code": "<code or null>",
+      "gl_entries": [
+        {"account": "<GL code>", "account_name": "<name>", "debit": <number>, "credit": <number>, "description": "<desc>"}
+      ],
+      "erp_action": "<specific ERP step>",
+      "priority": "IMMEDIATE|TODAY|THIS_WEEK|NEXT_WEEK",
+      "compliance_action": "<specific compliance step or null>",
+      "notes": "<important context for the AR analyst including customer aliases, parent entities, or compliance flags>"
+    }
+  ],
+  "cash_application_summary": {
+    "total_received_usd": <number>,
+    "auto_posted_usd": <number>,
+    "auto_posted_pct": <number>,
+    "held_compliance_usd": <number>,
+    "held_other_usd": <number>,
+    "deductions_usd": <number>,
+    "auto_writeoffs_usd": <number>,
+    "suspense_usd": <number>,
+    "invoices_closed": <number>,
+    "exceptions_requiring_action": <number>,
+    "compliance_escalations": <number>
+  },
+  "workqueue_items": [
+    {
+      "priority": <1,2,3,4>,
+      "risk_tier": "CRITICAL|HIGH|MEDIUM|LOW",
+      "txn_id": "<id>",
+      "team": "AR_ANALYST|DEDUCTIONS_TEAM|CREDIT_MANAGER|COMPLIANCE_OFFICER|TREASURY|LEGAL",
+      "action_required": "<specific task>",
+      "amount": <number>,
+      "due_by": "<Same Day|24 Hours|3 Days|5 Days>",
+      "escalation_note": "<why this matters / what happens if missed>"
+    }
+  ]
+}
+After the JSON write exactly: CASH_APP_COMPLETE"""
 
-        Args:
-            matched_set: successful matches from reconciliation
-            unmatched_payments: payments with no match
-            unmatched_invoices: invoices with no payment
-            reasoning_results: AI reasoning on mismatches
-            statement_date: bank statement date
+META = {
+    "label": "Cash Posting",
+    "icon": "✅",
+    "color": "#8b5cf6",
+    "desc": "Final posting instructions, GL entries, workqueue items",
+}
 
-        Returns:
-            dict with journal entries, GL posting format, and audit trail
-        """
-
-        journal_entries = []
-        deferred_entries = []
-
-        # Process matched payments
-        for match in matched_set:
-            entry = self._create_payment_entry(match, statement_date)
-            if entry["status"] == "DEFERRED":
-                deferred_entries.append(entry)
-            else:
-                journal_entries.append(entry)
-
-        # Process exceptions
-        for unmatched in unmatched_payments:
-            exception_entry = self._create_exception_entry(unmatched, statement_date)
-            if exception_entry:
-                if exception_entry["status"] == "DEFERRED":
-                    deferred_entries.append(exception_entry)
-                else:
-                    journal_entries.append(exception_entry)
-
-        # Generate GL posting batch
-        gl_batch = self._create_gl_batch(journal_entries, statement_date)
-
-        return {
-            "status": "completed",
-            "statement_date": statement_date,
-            "journal_entries": journal_entries,
-            "deferred_entries": deferred_entries,
-            "gl_posting_batch": gl_batch,
-            "summary": {
-                "ready_to_post": len(journal_entries),
-                "deferred": len(deferred_entries),
-                "total_cash_applied": sum(
-                    e.get("amount", 0)
-                    for e in journal_entries
-                    if e.get("entry_type") == "PAYMENT"
-                ),
-            },
-        }
-
-    def _create_payment_entry(self, match: Dict, statement_date: str) -> dict:
-        """Create GL entry for matched payment."""
-        amount = match.get("amount", 0)
-        invoice_number = match.get("invoice_number", "")
-        match_confidence = match.get("confidence", 0)
-
-        # Determine posting status
-        status = "READY" if match_confidence > 0.90 else "REVIEW_REQUIRED"
-
-        return {
-            "entry_id": f"ENTRY_{statement_date}_{match['bank_txn_id'][:8]}",
-            "entry_type": "PAYMENT",
-            "status": status,
-            "statement_date": statement_date,
-            "description": f"Cash application to invoice {invoice_number}",
-            "invoice_reference": invoice_number,
-            "bank_txn_id": match.get("bank_txn_id", ""),
-            "amount": amount,
-            "currency": "USD",
-            "match_type": match.get("match_type", ""),
-            "confidence": match_confidence,
-            "accounting_entries": [
-                {
-                    "line_number": 1,
-                    "account": "1200",  # AR clearing/deposit account
-                    "debit": amount,
-                    "credit": 0,
-                    "description": f"AR reduction - {invoice_number}",
-                },
-                {
-                    "line_number": 2,
-                    "account": "1010",  # Cash
-                    "debit": 0,
-                    "credit": amount,
-                    "description": "Bank deposit applied",
-                },
-            ],
-            "audit_trail": {
-                "matched_to": invoice_number,
-                "match_confidence": f"{match_confidence:.1%}",
-            },
-        }
-
-    def _create_exception_entry(self, unmatched: Dict, statement_date: str) -> dict:
-        """Create GL entry for unmatched payment exception."""
-        amount = unmatched.get("amount", 0)
-        anomaly_flags = unmatched.get("anomaly_flags", [])
-
-        # Determine posting status based on flags
-        if "COMPLIANCE_HOLD" in anomaly_flags:
-            status = "DEFERRED"
-            account = "1999"  # Suspense/clearance account
-        elif "NSF_RETURN" in anomaly_flags:
-            status = "READY"
-            account = "1999"  # Suspense for reversal
-        elif "MISSING_REMITTANCE" in anomaly_flags:
-            status = "DEFERRED"
-            account = "1900"  # Uncleared deposit
-        else:
-            status = "REVIEW_REQUIRED"
-            account = "1900"  # Hold pending review
-
-        return {
-            "entry_id": f"EXCEPTION_{statement_date}_{unmatched['bank_transaction_id'][:8]}",
-            "entry_type": "EXCEPTION",
-            "status": status,
-            "statement_date": statement_date,
-            "description": f"Unmatched payment - {anomaly_flags[0] if anomaly_flags else 'UNKNOWN'}",
-            "bank_txn_id": unmatched.get("bank_transaction_id", ""),
-            "amount": amount,
-            "currency": "USD",
-            "anomaly_flags": anomaly_flags,
-            "accounting_entries": [
-                {
-                    "line_number": 1,
-                    "account": account,
-                    "debit": amount,
-                    "credit": 0,
-                    "description": f"Unmatched deposit - {', '.join(anomaly_flags[:2])}",
-                },
-                {
-                    "line_number": 2,
-                    "account": "1010",
-                    "debit": 0,
-                    "credit": amount,
-                    "description": "Bank deposit",
-                },
-            ],
-            "audit_trail": {
-                "anomalies": anomaly_flags,
-                "action_required": status != "READY",
-            },
-        }
-
-    def _create_gl_batch(self, journal_entries: List[Dict], statement_date: str) -> dict:
-        """Create GL posting batch in standard format."""
-        total_debits = 0
-        total_credits = 0
-
-        all_lines = []
-        for entry_idx, entry in enumerate(journal_entries, 1):
-            for line in entry.get("accounting_entries", []):
-                all_lines.append(
-                    {
-                        "batch_line": len(all_lines) + 1,
-                        "entry_sequence": entry_idx,
-                        "entry_id": entry.get("entry_id", ""),
-                        "account": line.get("account", ""),
-                        "debit": line.get("debit", 0),
-                        "credit": line.get("credit", 0),
-                        "description": line.get("description", ""),
-                    }
-                )
-                total_debits += line.get("debit", 0)
-                total_credits += line.get("credit", 0)
-
-        return {
-            "batch_id": f"BATCH_{statement_date}",
-            "batch_date": statement_date,
-            "batch_status": "READY_TO_POST",
-            "lines": all_lines,
-            "batch_summary": {
-                "entry_count": len(journal_entries),
-                "line_count": len(all_lines),
-                "total_debits": total_debits,
-                "total_credits": total_credits,
-                "is_balanced": abs(total_debits - total_credits) < 0.01,
-            },
-        }
+MODEL_ENV_KEY = "MODEL_POSTING_AGENT"
+DEFAULT_MODEL = "gpt-4o"
+MAX_TOKENS = 8192

@@ -1,0 +1,85 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "JPMorgan Chase",
+  "account": "****3456",
+  "company": "Enterprise Holdings Group Inc.",
+  "transactions": [
+    {
+      "txn_id": "TXN-04-001",
+      "date": "2024-07-04",
+      "amount": 85000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "OMEGA GLOBAL HOLDINGS LLC",
+      "bank_reference": "WIRE20240704001",
+      "remittance_text": "INV-04-001 payment on behalf of Omega West Division",
+      "note": "Parent paying for subsidiary: Omega Global Holdings (CUST-04-P01) paying for Omega West Division (CUST-04-001). Post to subsidiary AR."
+    },
+    {
+      "txn_id": "TXN-04-002",
+      "date": "2024-07-07",
+      "amount": 56000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "CAPITAL RECEIVABLES CORP",
+      "bank_reference": "WIRE20240707002",
+      "remittance_text": "INV-04-002 INV-04-003 - factoring payment",
+      "note": "Third-party factoring: Capital Receivables Corp paying on behalf of Lakeview Supplies Inc. Post to customer AR, note factor."
+    },
+    {
+      "txn_id": "TXN-04-003",
+      "date": "2024-07-10",
+      "amount": 41200.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "BRIGHTON INDUSTRIES GROUP",
+      "bank_reference": "ACH20240710003",
+      "remittance_text": "INV-04-004 intercompany net settlement July",
+      "note": "Intercompany netting: our AR $68,000 minus our AP $26,800 = net payment $41,200. Requires DR to AR and CR to AP."
+    },
+    {
+      "txn_id": "TXN-04-004",
+      "date": "2024-07-14",
+      "amount": 32500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "NEXUS PARENT CORP",
+      "bank_reference": "ACH20240714004",
+      "remittance_text": "INV-04-005",
+      "note": "Parent paying for subsidiary: Nexus Parent Corp (CUST-04-P02) paying for Nexus Midwest LLC (CUST-04-005). Post to subsidiary."
+    },
+    {
+      "txn_id": "TXN-04-005",
+      "date": "2024-07-17",
+      "amount": 19800.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "T&R TRADING CO",
+      "bank_reference": "ACH20240717005",
+      "remittance_text": "INV-04-006",
+      "note": "DBA name mismatch: T&R Trading Co is the registered DBA of Thornton and Reed Enterprises (CUST-04-006). Alias resolved."
+    },
+    {
+      "txn_id": "TXN-04-006",
+      "date": "2024-07-21",
+      "amount": 47250.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "MOMENTUM GLOBAL INC",
+      "bank_reference": "WIRE20240721006",
+      "remittance_text": "INV-04-007",
+      "note": "Post-acquisition name: Momentum Global Inc. is the former name of Crestview Solutions Corp (CUST-04-007) prior to 2024-03 acquisition."
+    },
+    {
+      "txn_id": "TXN-04-007",
+      "date": "2024-07-24",
+      "amount": 28000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "CLEARFIELD TRADING LTD",
+      "bank_reference": "ACH20240724007",
+      "remittance_text": "INV-04-008",
+      "note": "Exact match: clean payment"
+    }
+  ]
+}

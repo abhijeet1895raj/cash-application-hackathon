@@ -1,0 +1,140 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "Goldman Sachs",
+  "account": "****1122",
+  "company": "Consolidated Global Corp",
+  "transactions": [
+    {
+      "txn_id": "TXN-10-001",
+      "date": "2024-07-02",
+      "amount": 250000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "ATLAS MANUFACTURING GROUP",
+      "bank_reference": "WIRE20240702001",
+      "remittance_text": "INV-10-001",
+      "note": "Clean exact match: large amount, exact invoice reference"
+    },
+    {
+      "txn_id": "TXN-10-002",
+      "date": "2024-07-04",
+      "amount": 487500.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "TITAN INDUSTRIAL CORP",
+      "bank_reference": "WIRE20240704002",
+      "remittance_text": "INV-10-002 INV-10-003 INV-10-004",
+      "note": "Multi-invoice: $175,000 + $212,500 + $100,000 = $487,500 exact"
+    },
+    {
+      "txn_id": "TXN-10-003",
+      "date": "2024-07-07",
+      "amount": 162000.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "FRANKFURT LOGISTICS GMBH",
+      "bank_reference": "SWIFT20240707003",
+      "remittance_text": "INV-10-005 EUR 150000 @ 1.08",
+      "note": "EUR SWIFT: 150,000 EUR at 1.08 USD/EUR = $162,000. FX payment."
+    },
+    {
+      "txn_id": "TXN-10-004",
+      "date": "2024-07-09",
+      "amount": 320000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "ZENITH HOLDINGS INC",
+      "bank_reference": "WIRE20240709004",
+      "remittance_text": "INV-10-006 payment on behalf of Zenith Southeast LLC",
+      "note": "Parent/subsidiary: Zenith Holdings (CUST-10-P01) paying for Zenith Southeast LLC (CUST-10-006). Post to subsidiary."
+    },
+    {
+      "txn_id": "TXN-10-005",
+      "date": "2024-07-11",
+      "amount": 890000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "MIRAN INTERNATIONAL FZCO",
+      "bank_reference": "WIRE20240711005",
+      "remittance_text": "INV-10-007",
+      "note": "COMPLIANCE HOLD: MIRAN INTERNATIONAL FZCO triggers OFAC sanctions screening. DO NOT POST. Escalate to Compliance Officer within 4 hours."
+    },
+    {
+      "txn_id": "TXN-10-006",
+      "date": "2024-07-14",
+      "amount": 138000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "SUMMIT ENTERPRISE GROUP",
+      "bank_reference": "ACH20240714006",
+      "remittance_text": "INV-10-008 less freight $7,000 less damage claim $5,000",
+      "note": "Multiple deductions: $150,000 invoice less $7,000 freight allowance less $5,000 damage claim = $138,000. Both deductions require workitems."
+    },
+    {
+      "txn_id": "TXN-10-007",
+      "date": "2024-07-17",
+      "amount": 225000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "HORIZON GLOBAL LLC",
+      "bank_reference": "WIRE20240717007",
+      "remittance_text": "INV-10-009",
+      "note": "OVERPAYMENT: Invoice $200,000. Payment $225,000. $25,000 excess. High-risk. Route to treasury."
+    },
+    {
+      "txn_id": "TXN-10-008",
+      "date": "2024-07-20",
+      "amount": 293600.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "CRESTLINE SUPPLIES INC",
+      "bank_reference": "ACH20240720008",
+      "remittance_text": "INV-10-010 2% early pay discount",
+      "note": "LATE DISCOUNT: Invoice $300,000 * 0.98 = $294,000. But discount deadline was 2024-07-15. Payment on 2024-07-20 is 5 days late. Unauthorized $6,000 discount."
+    },
+    {
+      "txn_id": "TXN-10-009",
+      "date": "2024-07-22",
+      "amount": 410000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "NOVA DISTRIBUTION CORP",
+      "bank_reference": "ACH20240722009",
+      "remittance_text": "EDI 820 file pending batch ref 2024-07-22",
+      "note": "EDI PENDING: Do not FIFO match. EDI 820 file expected within 24 hours with full remittance detail."
+    },
+    {
+      "txn_id": "TXN-10-010",
+      "date": "2024-08-20",
+      "amount": 175000.0,
+      "currency": "USD",
+      "payment_type": "CHECK",
+      "payer_raw": "RIDGEWAY CAPITAL GROUP",
+      "bank_reference": "CHECK-018834",
+      "remittance_text": "INV-10-012",
+      "note": "POST-DATED CHECK: Check date 2024-08-20 is future-dated. Hold until check date."
+    },
+    {
+      "txn_id": "TXN-10-011",
+      "date": "2024-07-25",
+      "amount": 84000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "KEYSTONE MATERIALS CORP",
+      "bank_reference": "WIRE20240725011",
+      "remittance_text": "INV-10-013 less CM-10-001 credit $16,000",
+      "note": "CREDIT NET: Invoice $100,000 minus credit memo $16,000 = net $84,000. Exact credit-net match."
+    },
+    {
+      "txn_id": "TXN-10-012",
+      "date": "2024-07-28",
+      "amount": 195000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "EASTGATE SOLUTIONS GROUP",
+      "bank_reference": "WIRE20240728012",
+      "remittance_text": "",
+      "note": "NO REMITTANCE: Large wire with no reference. FIFO match to oldest open invoice for this customer."
+    }
+  ]
+}

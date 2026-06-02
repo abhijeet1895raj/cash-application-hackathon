@@ -1,237 +1,131 @@
 """
-Mismatch Resolution Agent (AI Reasoning)
-
-Analyzes unmatched payments and invoices using AI reasoning to identify
-likely matches, exceptions, and provide resolution recommendations.
+MismatchReasoningAgent
+Applies deep business reasoning to every exception - classifying the root cause,
+assigning risk tier, and recommending the exact action for the AR team.
 """
 
-import json
-from typing import List, Dict, Any
+PROMPT = """You are the Mismatch Reasoning Agent in a Cash Application swarm.
 
+Your role: For every exception transaction, provide specific AI reasoning about WHY it didn't match cleanly
+and WHAT action the AR team should take. This is the intelligence layer - turn raw gaps into business actions.
 
-class MismatchAgent:
-    """
-    Uses AI reasoning to resolve unmatched payments and invoices.
-    """
+RISK ESCALATION TIERS (assign to every exception - determines SLA and routing):
+  CRITICAL (same-day) - Compliance holds, sanctions screening, wrong legal entity, disputed invoice payments,
+                         NSF returns on large amounts, stale checks already deposited
+  HIGH     (24 hours) - Unauthorized deductions >$1,000, overpayments >$5,000, duplicate payments,
+                         parent/subsidiary mismatches, factoring agent payments
+  MEDIUM   (3 days)   - Authorized deductions, EDI pending, post-dated checks, late discounts,
+                         intercompany netting, prepayments, DBA/alias mismatches
+  LOW      (5 days)   - Small balance write-offs, rounding differences, bank wire fees ≤$50
 
-    def __init__(self, client, model: str = "gpt-4o"):
-        self.client = client
-        self.model = model
+EXCEPTION CATEGORIES (all 7 category groups):
 
-    async def resolve_mismatches(
-        self, unmatched_payments: List[Dict], unmatched_invoices: List[Dict]
-    ) -> dict:
-        """
-        Use AI to reason through mismatches and provide recommendations.
+AMOUNT MISMATCHES:
+  EARLY_PAY_DISCOUNT    - Valid % discount taken within contractual discount window
+  UNAUTHORIZED_DISCOUNT - Discount taken outside window, or no discount terms exist
+  FREIGHT_DEDUCTION     - Deduction matches freight allowance on distribution agreement
+  DAMAGE_CLAIM          - Deduction matches damage/shortage claim pattern
+  TRADE_PROMO           - Promotional allowance deduction
+  PRICING_DISPUTE       - Customer disputes a line item price (requires credit memo or escalation)
+  SHORT_SHIP            - Customer deducting for undelivered goods
+  BANK_WIRE_FEE         - Delta $10-$50 = bank's wire transfer fee (auto write-off if ≤$25)
+  LATE_DISCOUNT         - Discount taken but AFTER discount_deadline (unauthorized)
+  OVERPAYMENT           - Payment exceeds invoice(s); excess becomes credit on account
 
-        Args:
-            unmatched_payments: list of bank transactions with no match
-            unmatched_invoices: list of AR invoices with no payment
+IDENTITY & NAME ISSUES:
+  SWIFT_NAME_TRUNCATION - Payer name cut at 35 chars; matched via alias table
+  DBA_NAME_MISMATCH     - Payer is a registered DBA of a known customer
+  POST_ACQUISITION_NAME - Payer uses former company name post M&A
+  ALIAS_RESOLVED        - Name resolved through alias registry with high confidence
 
-        Returns:
-            dict with reasoning, recommendations, and exception categorization
-        """
+MULTI-ENTITY / RELATIONSHIP:
+  PARENT_SUBSIDIARY     - Parent entity paying on behalf of subsidiary customer
+  THIRD_PARTY_FACTORING - Factoring company paying on behalf of customer
+  INTERCOMPANY_NET      - Net settlement between related entities (requires AP/AR bilateral entry)
+  WRONG_LEGAL_ENTITY    - Payment intended for a different legal entity (return or redirect)
 
-        reasoning_results = []
+TIMING / SEQUENCING:
+  DUPLICATE_PAYMENT     - Same payer + amount + invoice within 30-day window (hold second)
+  POST_DATED_CHECK      - Check date is in the future; hold until check date
+  STALE_CHECK           - Check >180 days old; cannot negotiate; return to issuer
+  INSTALLMENT_PAYMENT   - Partial payment per installment agreement
+  PREPAYMENT_ADVANCE    - No invoice; customer paying ahead of order; post to unearned revenue
+  NSF_RETURN            - Prior ACH bounced; must reverse previous application and reopen invoice
 
-        # Analyze each unmatched payment
-        for payment in unmatched_payments:
-            resolution = self._analyze_payment_exception(payment, unmatched_invoices)
-            reasoning_results.append(resolution)
+REMITTANCE / REFERENCE:
+  MISSING_REMITTANCE    - No reference; matched via FIFO or amount
+  VAGUE_REMITTANCE      - "See attached" / "June invoices" with no specifics; amount-based match
+  LEGACY_INVOICE_REF    - Customer used old ERP invoice numbering; cross-referenced via legacy map
+  PO_REFERENCE          - Customer pays by PO number not invoice number
+  EDI_REMITTANCE_PENDING - Payment held; EDI 820 file expected; do not FIFO match yet
 
-        # Categorize exceptions
-        exception_categories = self._categorize_exceptions(reasoning_results)
+FX & INTERNATIONAL:
+  FX_PAYMENT            - Foreign currency payment; verify USD equivalent via exchange rate
+  FX_RATE_MISMATCH      - FX conversion produces unexpected USD amount vs invoice
 
-        return {
-            "status": "completed",
-            "reasoning_results": reasoning_results,
-            "exception_summary": exception_categories,
-            "total_exceptions": len(reasoning_results),
-            "recommendations": self._generate_recommendations(exception_categories),
-        }
+COMPLIANCE & LEGAL:
+  COMPLIANCE_HOLD       - Payer triggers OFAC/sanctions screening; DO NOT POST; escalate to Compliance
+  DISPUTED_INVOICE_HOLD - Invoice under active dispute/legal hold; DO NOT POST; escalate to Credit Manager
+  LEGAL_HOLD            - Invoice or customer account has court/legal freeze
 
-    def _analyze_payment_exception(
-        self, payment: Dict, unmatched_invoices: List[Dict]
-    ) -> dict:
-        """
-        Analyze a single unmatched payment for possible explanations.
-        """
-        anomaly_flags = payment.get("anomaly_flags", [])
-        amount = payment.get("amount", 0)
-        payer_normalized = payment.get("payer_name_normalized", "")
-        remittance = payment.get("remittance_text_normalized", "")
+For each exception:
+- Reference actual amounts, dates, and terms (not generic boilerplate)
+- Assign risk_tier: CRITICAL | HIGH | MEDIUM | LOW
+- Provide escalation_contact: the specific team or person to notify
+- For COMPLIANCE_HOLD: always recommended_action=COMPLIANCE_ESCALATE, sla_hours=4
 
-        # Categorize payment
-        exception_type = self._categorize_payment(anomaly_flags, amount, remittance)
+Return ONLY this JSON:
+{
+  "agent": "MismatchReasoningAgent",
+  "exception_analysis": [
+    {
+      "txn_id": "<id>",
+      "exception_type": "<category from list above>",
+      "exception_category_group": "AMOUNT_MISMATCH|IDENTITY|MULTI_ENTITY|TIMING|REMITTANCE|FX|COMPLIANCE",
+      "risk_tier": "CRITICAL|HIGH|MEDIUM|LOW",
+      "reasoning": "<specific explanation referencing amounts/dates/invoice IDs/terms>",
+      "confidence_pct": <0-100>,
+      "recommended_action": "AUTO_APPLY|DEDUCTION_WORKITEM|MANUAL_REVIEW|RETURN_TO_CUSTOMER|WRITE_OFF|HOLD_EDI|HOLD_CHECK_DATE|COMPLIANCE_ESCALATE|LEGAL_ESCALATE|CREDIT_ESCALATE|REVERSE_AND_REOPEN|INTERCO_JOURNAL",
+      "deduction_amount": <number or 0>,
+      "suggested_gl_code": "<GL account code>",
+      "gl_description": "<GL account name>",
+      "sla_hours": <number>,
+      "escalation_contact": "AR_ANALYST|DEDUCTIONS_TEAM|CREDIT_MANAGER|COMPLIANCE_OFFICER|TREASURY|LEGAL|NONE",
+      "auto_resolvable": <bool>
+    }
+  ],
+  "exception_summary": {
+    "total_exceptions": <n>,
+    "by_risk_tier": {
+      "CRITICAL": <n>,
+      "HIGH": <n>,
+      "MEDIUM": <n>,
+      "LOW": <n>
+    },
+    "by_category_group": {
+      "AMOUNT_MISMATCH": <n>,
+      "IDENTITY": <n>,
+      "MULTI_ENTITY": <n>,
+      "TIMING": <n>,
+      "REMITTANCE": <n>,
+      "FX": <n>,
+      "COMPLIANCE": <n>
+    },
+    "auto_resolvable": <n>,
+    "needs_manual_review": <n>,
+    "compliance_escalations": <n>,
+    "total_deduction_amount": <number>
+  }
+}
+After the JSON write exactly: NEXT: CashPostingAgent"""
 
-        # Find potential matches (more lenient)
-        potential_matches = self._find_potential_matches(payment, unmatched_invoices)
+META = {
+    "label": "Mismatch Reasoning",
+    "icon": "🧠",
+    "color": "#ef4444",
+    "desc": "AI reasoning for every exception: deduction type, cause, action",
+}
 
-        return {
-            "bank_txn_id": payment.get("bank_transaction_id", ""),
-            "amount": amount,
-            "payer": payer_normalized,
-            "exception_type": exception_type,
-            "anomaly_flags": anomaly_flags,
-            "potential_matches": potential_matches,
-            "reasoning": self._generate_reasoning(exception_type, potential_matches),
-            "recommendation": self._generate_recommendation(exception_type, potential_matches),
-            "confidence": self._calc_confidence(exception_type, potential_matches),
-        }
-
-    def _categorize_payment(
-        self, anomaly_flags: List[str], amount: float, remittance: str
-    ) -> str:
-        """Categorize the payment exception type."""
-
-        if "MISSING_REMITTANCE" in anomaly_flags:
-            return "NO_REMITTANCE_DATA"
-
-        if "NSF_RETURN" in anomaly_flags:
-            return "NSF_OR_RETURN"
-
-        if "FX_PAYMENT" in anomaly_flags:
-            return "FOREIGN_EXCHANGE"
-
-        if "PREPAYMENT" in anomaly_flags:
-            return "PREPAYMENT"
-
-        if "INTERCOMPANY_NET" in anomaly_flags:
-            return "INTERCOMPANY_NETTING"
-
-        if "COMPLIANCE_HOLD" in anomaly_flags:
-            return "COMPLIANCE_FLAG"
-
-        if "EDI_REMITTANCE_PENDING" in anomaly_flags:
-            return "EDI_PENDING"
-
-        if "THIRD_PARTY_PAYER" in anomaly_flags:
-            return "THIRD_PARTY_PAYMENT"
-
-        if amount < 0:
-            return "DEBIT_MEMO_OR_REVERSAL"
-
-        if amount > 50000:
-            return "LARGE_PAYMENT_UNUSUAL"
-
-        return "POSSIBLE_DUPLICATE_OR_TIMING"
-
-    def _find_potential_matches(
-        self, payment: Dict, unmatched_invoices: List[Dict]
-    ) -> List[Dict]:
-        """Find potential matches using lenient criteria."""
-        potential = []
-
-        payer = payment.get("payer_name_normalized", "")
-        amount = payment.get("amount", 0)
-
-        for inv in unmatched_invoices:
-            customer = inv.get("customer_name_normalized", "")
-
-            # Lenient customer match
-            name_words_payer = set(payer.split())
-            name_words_customer = set(customer.split())
-            if name_words_payer & name_words_customer:
-                # Some word overlap
-                potential.append(
-                    {
-                        "invoice_number": inv.get("invoice_number", ""),
-                        "customer": customer,
-                        "open_balance": inv.get("open_balance", 0),
-                        "match_reason": "Customer name overlap",
-                        "amount_variance": abs(amount - inv.get("open_balance", 0)),
-                    }
-                )
-
-        # Sort by amount variance
-        potential.sort(key=lambda x: x["amount_variance"])
-        return potential[:3]  # Return top 3
-
-    def _generate_reasoning(
-        self, exception_type: str, potential_matches: List[Dict]
-    ) -> str:
-        """Generate AI reasoning explanation."""
-        reasoning_map = {
-            "NO_REMITTANCE_DATA": "Payment received with no invoice reference; requires manual review to match to open AR.",
-            "NSF_RETURN": "Transaction flagged as NSF or bank return; should be reversed or reconciled separately.",
-            "FOREIGN_EXCHANGE": "Foreign currency or FX payment detected; may be applying to multi-currency invoice or requires conversion.",
-            "PREPAYMENT": "Payment marked as prepayment/deposit; likely applying to future invoices or deposit account.",
-            "INTERCOMPANY_NETTING": "Payment references intercompany netting; may be contra-account or AR/AP offset.",
-            "COMPLIANCE_FLAG": "Payment from sanctioned region; holds compliance review before posting.",
-            "EDI_PENDING": "Large round amount with no remittance suggests EDI 820 remittance arriving separately.",
-            "THIRD_PARTY_PAYMENT": "Payment from third party not matching payer; may be collection agency or factoring arrangement.",
-            "DEBIT_MEMO_OR_REVERSAL": "Negative amount indicates reversal, debit memo, or chargeback.",
-            "LARGE_PAYMENT_UNUSUAL": "Unusually large payment; possible lump-sum settlement or consolidated payment.",
-            "POSSIBLE_DUPLICATE_OR_TIMING": "Payment cannot be matched; possible timing issue, duplicate, or data quality concern.",
-        }
-        return reasoning_map.get(exception_type, "Unclassified exception requiring manual review.")
-
-    def _generate_recommendation(
-        self, exception_type: str, potential_matches: List[Dict]
-    ) -> str:
-        """Generate action recommendation."""
-        if potential_matches:
-            top_match = potential_matches[0]
-            return f"REVIEW: Consider matching to {top_match['invoice_number']} (open balance: ${top_match['open_balance']:.2f})"
-
-        recommendation_map = {
-            "NO_REMITTANCE_DATA": "MANUAL_REVIEW: Contact customer for remittance information",
-            "NSF_RETURN": "REVERSE: Process reversal in ERP system",
-            "FOREIGN_EXCHANGE": "MANUAL_REVIEW: Route to FX/treasury team",
-            "PREPAYMENT": "HOLD: Route to deposit account or prepayment handling process",
-            "INTERCOMPANY_NETTING": "DEFER: Process as intercompany settlement",
-            "COMPLIANCE_FLAG": "HOLD: Escalate to compliance review",
-            "EDI_PENDING": "HOLD: Await EDI 820 remittance arrival",
-            "THIRD_PARTY_PAYMENT": "MANUAL_REVIEW: Verify third-party collection arrangement",
-            "DEBIT_MEMO_OR_REVERSAL": "REVERSE: Post reversal entry",
-            "LARGE_PAYMENT_UNUSUAL": "MANUAL_REVIEW: Escalate for approval",
-            "POSSIBLE_DUPLICATE_OR_TIMING": "MANUAL_REVIEW: Investigate data quality",
-        }
-        return recommendation_map.get(exception_type, "MANUAL_REVIEW: Requires human decision")
-
-    def _categorize_exceptions(self, reasoning_results: List[Dict]) -> Dict[str, int]:
-        """Count exceptions by type."""
-        categories = {}
-        for result in reasoning_results:
-            exc_type = result.get("exception_type", "UNKNOWN")
-            categories[exc_type] = categories.get(exc_type, 0) + 1
-        return categories
-
-    def _generate_recommendations(
-        self, exception_categories: Dict[str, int]
-    ) -> List[str]:
-        """Generate high-level recommendations."""
-        recommendations = []
-
-        if exception_categories.get("NO_REMITTANCE_DATA", 0) > 0:
-            recommendations.append(
-                f"ACTION: {exception_categories['NO_REMITTANCE_DATA']} payments need remittance clarification"
-            )
-
-        if exception_categories.get("COMPLIANCE_FLAG", 0) > 0:
-            recommendations.append(
-                f"ESCALATE: {exception_categories['COMPLIANCE_FLAG']} payments on compliance hold"
-            )
-
-        if exception_categories.get("EDI_PENDING", 0) > 0:
-            recommendations.append(
-                f"MONITOR: {exception_categories['EDI_PENDING']} payments awaiting EDI remittances"
-            )
-
-        if not recommendations:
-            recommendations.append("All exceptions categorized and flagged for action")
-
-        return recommendations
-
-    def _calc_confidence(self, exception_type: str, potential_matches: List[Dict]) -> float:
-        """Calculate confidence in categorization."""
-        if potential_matches:
-            return 0.75
-        if exception_type in [
-            "NO_REMITTANCE_DATA",
-            "NSF_RETURN",
-            "FOREIGN_EXCHANGE",
-            "COMPLIANCE_FLAG",
-        ]:
-            return 0.90
-        return 0.65
+MODEL_ENV_KEY = "MODEL_REASONING_AGENT"
+DEFAULT_MODEL = "gpt-4o"
+MAX_TOKENS = 6144

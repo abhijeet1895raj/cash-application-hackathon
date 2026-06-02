@@ -1,192 +1,208 @@
-"""
-FastAPI Cash Application Server
-
-Serves the 5-agent pipeline via REST API with Server-Sent Events (SSE) streaming.
-Loads demo data from fixtures and orchestrates the agent pipeline.
-"""
-
-import os
 import json
 import asyncio
+import os
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
-from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from agents.cash_app import CashApplicationFoundry
-
-# Load environment variables
 load_dotenv()
 
-# Configuration
-USE_FIXTURES = os.getenv("USE_FIXTURES", "true").lower() == "true"
-DATA_DIR = Path(__file__).parent / "data"
-FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
+# ── Azure Application Insights ────────────────────────────────────────────────
+_conn_str = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING", "")
+if _conn_str:
+    try:
+        from azure.monitor.opentelemetry import configure_azure_monitor
+        configure_azure_monitor(connection_string=_conn_str)
+    except Exception:
+        pass  # telemetry is non-critical
 
-# Initialize Azure OpenAI client
-try:
-    from openai import AsyncAzureOpenAI
+# ── Azure Blob Storage ────────────────────────────────────────────────────────
+_storage_url = os.getenv("AZURE_STORAGE_ACCOUNT_URL", "")
+_blob_service = None
+if _storage_url:
+    try:
+        from azure.storage.blob import BlobServiceClient
+        from azure.identity import DefaultAzureCredential
+        _blob_service = BlobServiceClient(
+            account_url=_storage_url,
+            credential=DefaultAzureCredential(),
+        )
+    except Exception:
+        pass  # storage is non-critical
 
-    client = AsyncAzureOpenAI(
-        api_key=os.getenv("AZURE_API_KEY"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview"),
-        azure_endpoint=os.getenv("AZURE_AI_ENDPOINT"),
-    )
-except Exception as e:
-    print(f"Warning: Could not initialize Azure OpenAI client: {e}")
-    print("Running in fixture mode only")
-    client = None
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Lifespan context manager for startup/shutdown."""
-    print("🚀 Cash Application Foundry starting...")
-    yield
-    print("🛑 Cash Application Foundry shutting down...")
+BLOB_CONTAINER = "cash-app-runs"
 
 
-app = FastAPI(
-    title="Cash Application Foundry",
-    description="5-agent AI pipeline for bank reconciliation",
-    version="1.0.0",
-    lifespan=lifespan,
-)
+def _upload_blob(path: str, data: dict):
+    """Upload JSON to Azure Blob Storage. Silently skips if storage not configured."""
+    if not _blob_service:
+        return
+    try:
+        client = _blob_service.get_blob_client(container=BLOB_CONTAINER, blob=path)
+        client.upload_blob(json.dumps(data, indent=2), overwrite=True)
+    except Exception:
+        pass
 
-# CORS middleware
+
+from agents.cash_app import run_cash_application
+
+app = FastAPI(title="Cash Application Foundry API")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount frontend static files if they exist
-if FRONTEND_DIR.exists():
-    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+FIXTURES_DIR = Path(__file__).parent / "data"
+SAMPLES_DIR = FIXTURES_DIR / "samples"
 
 
-def load_fixture(filename: str) -> dict:
-    """Load JSON fixture file."""
-    fixture_path = DATA_DIR / filename
-    if not fixture_path.exists():
-        raise FileNotFoundError(f"Fixture not found: {filename}")
+class AnalyzeRequest(BaseModel):
+    bank_data: dict
+    ar_data: dict
 
-    with open(fixture_path, "r") as f:
-        return json.load(f)
+
+def _load_sample(sample_id: str) -> tuple[dict, dict]:
+    """Load bank_statement.json and open_ar.json for the given sample_id (e.g. '01')."""
+    sample_dir = SAMPLES_DIR / f"sample_{sample_id.zfill(2)}"
+    if sample_dir.exists():
+        bank = json.loads((sample_dir / "bank_statement.json").read_text())
+        ar = json.loads((sample_dir / "open_ar.json").read_text())
+        return bank, ar
+    # Fallback to legacy fixture files
+    bank = json.loads((FIXTURES_DIR / "bank_statement.json").read_text())
+    ar = json.loads((FIXTURES_DIR / "open_ar.json").read_text())
+    return bank, ar
 
 
 @app.get("/health")
-async def health_check():
-    """Health check endpoint."""
+async def health():
+    storage_configured = _blob_service is not None
+    telemetry_configured = bool(_conn_str)
+    sample_count = len(list(SAMPLES_DIR.glob("sample_*"))) if SAMPLES_DIR.exists() else 0
     return {
-        "status": "healthy",
-        "service": "Cash Application Foundry",
-        "version": "1.0.0",
-        "fixtures_enabled": USE_FIXTURES,
+        "status": "ok",
+        "service": "cash-application-foundry",
+        "azure_blob_storage": storage_configured,
+        "azure_app_insights": telemetry_configured,
+        "use_fixtures": os.getenv("USE_FIXTURES", "true"),
+        "sample_count": sample_count,
     }
 
 
-@app.post("/api/process")
-async def process_statement():
-    """
-    Process bank statement and AR data through the 5-agent pipeline.
-    Streams agent outputs as Server-Sent Events (SSE).
-    """
-
-    if not USE_FIXTURES:
-        raise HTTPException(
-            status_code=400,
-            detail="Fixtures disabled. Please POST bank_statement and ar_ledger data.",
-        )
-
-    async def event_stream():
-        """SSE event generator."""
-        try:
-            # Load fixtures
-            bank_statement = load_fixture("bank_statement.json")
-            ar_ledger = load_fixture("open_ar.json")
-
-            # Initialize foundry
-            foundry = CashApplicationFoundry(client, use_fixtures=USE_FIXTURES)
-
-            # Run pipeline and stream events
-            async for event in foundry.run_pipeline(bank_statement, ar_ledger):
-                # Format as SSE
-                data = json.dumps(event)
-                yield f"data: {data}\n\n"
-
-                # Small delay to ensure client receives each event
-                await asyncio.sleep(0.1)
-
-        except Exception as e:
-            print(f"Error in event stream: {e}")
-            yield f"data: {json.dumps({'agent': 'error', 'status': 'failed', 'message': str(e)})}\n\n"
-
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+@app.get("/samples")
+async def list_samples():
+    """Return the list of available sample datasets."""
+    samples = []
+    if SAMPLES_DIR.exists():
+        for d in sorted(SAMPLES_DIR.glob("sample_*")):
+            meta_file = d / "meta.json"
+            if meta_file.exists():
+                meta = json.loads(meta_file.read_text())
+                samples.append(meta)
+    return {"samples": samples}
 
 
-@app.post("/api/process-custom")
-async def process_custom(bank_statement: dict, ar_ledger: dict):
-    """
-    Process custom bank statement and AR data.
-    Accepts JSON payloads and streams agent outputs as SSE.
-    """
+@app.get("/demo-data")
+async def demo_data(sample: str = "01"):
+    bank_statement, open_ar = _load_sample(sample)
+    return {"bank_statement": bank_statement, "open_ar": open_ar, "sample_id": sample}
+
+
+@app.post("/analyze")
+async def analyze(request: AnalyzeRequest):
+    run_id = str(uuid.uuid4())
+    started_at = datetime.now(timezone.utc).isoformat()
+
+    # Save inputs to Azure Blob Storage immediately
+    _upload_blob(f"{run_id}/bank_statement.json", {
+        "run_id": run_id,
+        "started_at": started_at,
+        "data": request.bank_data,
+    })
+    _upload_blob(f"{run_id}/open_ar.json", {
+        "run_id": run_id,
+        "started_at": started_at,
+        "data": request.ar_data,
+    })
+
+    agent_events = []
+    all_results = {}
 
     async def event_stream():
-        """SSE event generator."""
+        # Keepalive pump - sends SSE comment every 10s to prevent Railway proxy timeout
+        keepalive_queue: asyncio.Queue = asyncio.Queue()
+
+        async def _keepalive():
+            while True:
+                await asyncio.sleep(10)
+                await keepalive_queue.put(": keepalive\n\n")
+
+        ka_task = asyncio.create_task(_keepalive())
+
+        async def _swarm():
+            try:
+                async for event in run_cash_application(request.bank_data, request.ar_data):
+                    event["run_id"] = run_id
+
+                    evt_type = event.get("event", "")
+                    if evt_type in ("agent_start", "agent_complete"):
+                        agent_events.append({
+                            "ts": datetime.now(timezone.utc).isoformat(),
+                            "event": evt_type,
+                            "agent": event.get("agent"),
+                            "model": event.get("model"),
+                        })
+
+                    if evt_type == "agent_complete" and event.get("output"):
+                        all_results[event["agent"]] = event["output"]
+
+                    if evt_type == "swarm_complete":
+                        _upload_blob(f"{run_id}/results.json", {
+                            "run_id": run_id,
+                            "started_at": started_at,
+                            "completed_at": datetime.now(timezone.utc).isoformat(),
+                            "results": event.get("results", all_results),
+                        })
+                        _upload_blob(f"{run_id}/agent_events.json", {
+                            "run_id": run_id,
+                            "events": agent_events,
+                        })
+
+                    await keepalive_queue.put(f"data: {json.dumps(event)}\n\n")
+
+            except Exception as e:
+                await keepalive_queue.put(
+                    f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                )
+            finally:
+                await keepalive_queue.put(None)  # sentinel - stream done
+
+        asyncio.create_task(_swarm())
+
         try:
-            # Initialize foundry
-            foundry = CashApplicationFoundry(client, use_fixtures=False)
+            while True:
+                item = await keepalive_queue.get()
+                if item is None:
+                    break
+                yield item
+        finally:
+            ka_task.cancel()
+            yield "data: [DONE]\n\n"
 
-            # Run pipeline and stream events
-            async for event in foundry.run_pipeline(bank_statement, ar_ledger):
-                # Format as SSE
-                data = json.dumps(event)
-                yield f"data: {data}\n\n"
-
-                # Small delay to ensure client receives each event
-                await asyncio.sleep(0.1)
-
-        except Exception as e:
-            print(f"Error in event stream: {e}")
-            yield f"data: {json.dumps({'agent': 'error', 'status': 'failed', 'message': str(e)})}\n\n"
-
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
-
-
-@app.get("/api/fixtures/bank-statement")
-async def get_bank_statement_fixture():
-    """Get bank statement fixture for reference."""
-    return load_fixture("bank_statement.json")
-
-
-@app.get("/api/fixtures/ar-ledger")
-async def get_ar_ledger_fixture():
-    """Get AR ledger fixture for reference."""
-    return load_fixture("open_ar.json")
-
-
-@app.get("/api/fixtures/demo-result")
-async def get_demo_result():
-    """Get pre-built demo result (if available)."""
-    try:
-        return load_fixture("cash_app_results.json")
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Demo result not found")
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
     )

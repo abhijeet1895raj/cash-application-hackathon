@@ -1,7 +1,15 @@
-.env
-.venv/
-node_modules/
+# Python
 __pycache__/
-*.pyc
-.DS_Store
+*.py[cod]
+.venv/
+*.egg-info/
+.env
+
+# Node
+node_modules/
 .next/
+.vercel/
+
+# OS
+.DS_Store
+*.log

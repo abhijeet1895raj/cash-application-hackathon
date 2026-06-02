@@ -1,0 +1,85 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "HSBC USA",
+  "account": "****7890",
+  "company": "Atlantic Export Services Inc.",
+  "transactions": [
+    {
+      "txn_id": "TXN-05-001",
+      "date": "2024-07-04",
+      "amount": 54000.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "BERLIN COMPONENTS GMBH",
+      "bank_reference": "SWIFT20240704001",
+      "remittance_text": "INV-05-001 EUR 50000 @ 1.08",
+      "note": "EUR SWIFT: 50,000 EUR at 1.08 USD/EUR = $54,000 USD. Exact match after FX conversion."
+    },
+    {
+      "txn_id": "TXN-05-002",
+      "date": "2024-07-07",
+      "amount": 38145.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "LONDON TRADING CO LTD",
+      "bank_reference": "SWIFT20240707002",
+      "remittance_text": "INV-05-002 GBP 30000 @ 1.2715",
+      "note": "GBP SWIFT: 30,000 GBP at 1.2715 USD/GBP = $38,145 USD. Verify FX rate."
+    },
+    {
+      "txn_id": "TXN-05-003",
+      "date": "2024-07-09",
+      "amount": 29600.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "AMSTERDAM SUPPLY BV",
+      "bank_reference": "SWIFT20240709003",
+      "remittance_text": "INV-05-003 EUR 27500 @ 1.0764",
+      "note": "FX RATE MISMATCH: 27,500 EUR converted at 1.0764 = $29,601. Invoice expected $29,700 (based on deal rate 1.08). Delta $100 - FX rate difference."
+    },
+    {
+      "txn_id": "TXN-05-004",
+      "date": "2024-07-12",
+      "amount": 22200.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "TORONTO DISTRIBUTORS INC",
+      "bank_reference": "ACH20240712004",
+      "remittance_text": "INV-05-004 CAD 30000 @ 0.74",
+      "note": "CAD ACH: 30,000 CAD at 0.74 USD/CAD = $22,200 USD. Exact match after FX conversion."
+    },
+    {
+      "txn_id": "TXN-05-005",
+      "date": "2024-07-15",
+      "amount": 86400.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "MUNICH INDUSTRIAL AG",
+      "bank_reference": "SWIFT20240715005",
+      "remittance_text": "INV-05-005 INV-05-006 EUR 80000 @ 1.08",
+      "note": "EUR multi-invoice: 80,000 EUR at 1.08 = $86,400. Covers two invoices: EUR 45,000 + EUR 35,000."
+    },
+    {
+      "txn_id": "TXN-05-006",
+      "date": "2024-07-19",
+      "amount": 25405.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "MANCHESTER GOODS PLC",
+      "bank_reference": "SWIFT20240719006",
+      "remittance_text": "INV-05-007 GBP 20000 @ 1.2715 less GBP15 bank fee",
+      "note": "GBP with bank fee: 20,000 GBP at 1.2715 = $25,430. Less GBP 15 bank fee = $25,411. Actual received $25,405 - delta within auto write-off threshold."
+    },
+    {
+      "txn_id": "TXN-05-007",
+      "date": "2024-07-23",
+      "amount": 67500.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "CONTINENTAL EXPORTS LLC",
+      "bank_reference": "WIRE20240723007",
+      "remittance_text": "INV-05-008",
+      "note": "USD clean payment from international customer billed in USD"
+    }
+  ]
+}

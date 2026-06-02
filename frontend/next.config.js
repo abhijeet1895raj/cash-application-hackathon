@@ -1,15 +1,15 @@
 /** @type {import('next').NextConfig} */
+const rawBackend = process.env.BACKEND_URL || "http://localhost:8001";
+const backendUrl = rawBackend.startsWith("http") ? rawBackend : `https://${rawBackend}`;
+
 const nextConfig = {
-  reactStrictMode: true,
-  rewrites: async () => {
-    return {
-      fallback: [
-        {
-          source: '/api/:path*',
-          destination: 'http://localhost:8000/api/:path*',
-        },
-      ],
-    };
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendUrl}/:path*`,
+      },
+    ];
   },
 };
 

@@ -1,0 +1,107 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "Wells Fargo",
+  "account": "****5678",
+  "company": "Retail Direct Group LLC",
+  "transactions": [
+    {
+      "txn_id": "TXN-02-001",
+      "date": "2024-07-03",
+      "amount": 39200.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "NORTHGATE RETAIL INC",
+      "bank_reference": "ACH20240703001",
+      "remittance_text": "INV-02-001 2% early pay",
+      "note": "Valid early pay: $40,000 * 0.98 = $39,200. Paid day 9 within 10-day window"
+    },
+    {
+      "txn_id": "TXN-02-002",
+      "date": "2024-07-05",
+      "amount": 47500.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "SUMMIT RETAIL CORP",
+      "bank_reference": "WIRE20240705002",
+      "remittance_text": "INV-02-002 less freight $2,500",
+      "note": "Freight deduction: $50,000 invoice less $2,500 freight allowance per distribution agreement"
+    },
+    {
+      "txn_id": "TXN-02-003",
+      "date": "2024-07-08",
+      "amount": 28750.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "VALLEY STORES LLC",
+      "bank_reference": "ACH20240708003",
+      "remittance_text": "INV-02-003 damage claim deduction $1,250",
+      "note": "Damage claim: customer deducting $1,250 for goods damaged in transit. Claim filed 2024-06-28"
+    },
+    {
+      "txn_id": "TXN-02-004",
+      "date": "2024-07-10",
+      "amount": 62000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "COASTAL CHAIN STORES",
+      "bank_reference": "WIRE20240710004",
+      "remittance_text": "INV-02-004 Q2 trade promo allowance $3,000",
+      "note": "Trade promo deduction: $3,000 promotional allowance per Q2 trade deal signed 2024-05-01"
+    },
+    {
+      "txn_id": "TXN-02-005",
+      "date": "2024-07-12",
+      "amount": 33500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "MIDWEST GROCERS CO",
+      "bank_reference": "ACH20240712005",
+      "remittance_text": "INV-02-005",
+      "note": "Unauthorized deduction: $35,000 invoice, paid $33,500. No discount terms. $1,500 unexplained deduction"
+    },
+    {
+      "txn_id": "TXN-02-006",
+      "date": "2024-07-15",
+      "amount": 19800.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "EASTERN MART GROUP",
+      "bank_reference": "ACH20240715006",
+      "remittance_text": "INV-02-006 short ship deduction 200 units",
+      "note": "Short ship: customer deducting for 200 undelivered units at $10 each = $2,000 deduction from $21,800 invoice"
+    },
+    {
+      "txn_id": "TXN-02-007",
+      "date": "2024-07-18",
+      "amount": 25840.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "PACIFIC SUPERSTORE INC",
+      "bank_reference": "ACH20240718007",
+      "remittance_text": "INV-02-007 2% discount",
+      "note": "Late discount: $26,000 * 0.98 = $25,480. But discount deadline was 2024-07-10 and payment is 2024-07-18. UNAUTHORIZED."
+    },
+    {
+      "txn_id": "TXN-02-008",
+      "date": "2024-07-22",
+      "amount": 44000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "HIGHLAND RETAIL INC",
+      "bank_reference": "WIRE20240722008",
+      "remittance_text": "INV-02-008 pricing dispute line 3",
+      "note": "Pricing dispute: customer claims line item 3 was billed at $12/unit, contract says $10/unit. Disputing $2,000"
+    },
+    {
+      "txn_id": "TXN-02-009",
+      "date": "2024-07-25",
+      "amount": 15000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "SUNRISE DISTRIBUTORS",
+      "bank_reference": "ACH20240725009",
+      "remittance_text": "INV-02-009",
+      "note": "Exact match: clean payment, no deductions"
+    }
+  ]
+}

@@ -1,217 +1,102 @@
 """
-Reconciliation Agent
-
-Matches bank transactions to AR invoices using fuzzy customer/amount logic,
-produces a match report with confidence scores and unmatched items.
+ReconciliationAgent
+Matches every bank transaction to open AR invoices using an 8-tier hierarchy.
 """
 
-import json
-from typing import List, Dict, Tuple
-from difflib import SequenceMatcher
+PROMPT = """You are the Reconciliation Agent in a Cash Application swarm.
 
+Your role: Match every bank transaction to open AR invoices using an 8-tier matching hierarchy.
+Apply all arithmetic precisely using the exact numbers from the input data. Show your working
+for every amount comparison so the result is auditable.
 
-class ReconciliationAgent:
-    """
-    Matches bank payments to open AR invoices.
-    """
+CONFIGURABLE THRESHOLDS (use these exactly):
+  AUTO_WRITEOFF_THRESHOLD = 25.00      # Differences <= $25 auto write-off (bank fees, rounding)
+  FUZZY_NAME_MATCH_THRESHOLD = 0.75   # Minimum similarity for alias/DBA matching
+  DUPLICATE_WINDOW_DAYS = 30          # Flag duplicates within this window
+  DISCOUNT_LATE_TOLERANCE_DAYS = 0    # No tolerance for late early-pay discounts
 
-    def __init__(self, client, model: str = "gpt-4o"):
-        self.client = client
-        self.model = model
+PRE-CHECKS (run BEFORE matching tiers - these block or redirect a transaction):
+  A. COMPLIANCE_HOLD  - if txn has COMPLIANCE_HOLD flag -> do NOT match, status=COMPLIANCE_HOLD
+  B. WRONG_ENTITY     - if remittance references a different legal entity -> status=WRONG_ENTITY
+  C. DISPUTED_INVOICE - if parsed_references points to a do_not_auto_apply invoice -> status=DISPUTED_INVOICE_HOLD
+  D. POST_DATED_CHECK - if check_date > statement_date -> status=POST_DATED_HOLD
+  E. STALE_CHECK      - if check_date < statement_date - 180 days -> status=STALE_CHECK_RETURN
+  F. INTERCOMPANY_NET - if INTERCOMPANY_NET flag -> match to intercompany_netting table, not invoices
+  G. PREPAYMENT       - if PREPAYMENT flag -> status=SUSPENSE_PREPAYMENT, no invoice match
+  H. EDI_PENDING      - if EDI_REMITTANCE_PENDING flag -> status=HOLD_EDI_PENDING, match after EDI arrives
 
-    async def reconcile_payments_to_invoices(
-        self, normalized_txns: List[Dict], ar_invoices: List[Dict]
-    ) -> dict:
-        """
-        Match bank transactions to AR invoices.
+8-TIER MATCHING HIERARCHY (apply in order after pre-checks):
+  Tier 1 - EXACT:          amount == invoice.open_amount AND invoice_id in parsed_references
+  Tier 2 - LEGACY_REF:     parsed_references contains a legacy_invoice_id -> lookup in legacy_invoice_map
+  Tier 3 - ALIAS_MATCH:    payer_normalized OR payer_raw matches customer alias table (fuzzy >=75%) + amount match
+  Tier 4 - REMITTANCE_REF: any parsed_reference matches invoice_id or po_reference (amount within AUTO_WRITEOFF_THRESHOLD)
+  Tier 5 - DISCOUNT_EXACT: amount == invoice.open_amount * (1 - discount_pct/100) AND date <= discount_deadline
+  Tier 6 - MULTI_INVOICE:  amount == sum of 2-4 open invoices for same customer (enumerate combinations precisely)
+  Tier 7 - CREDIT_NET:     amount == invoice.open_amount - existing_credit_memo
+  Tier 8 - FIFO:           customer identified by alias/name -> apply to oldest open invoice(s)
 
-        Args:
-            normalized_txns: output from bank_statement_agent
-            ar_invoices: output from ar_ledger_agent
+ARITHMETIC RULES - apply these exactly, never approximate:
+  1. Multi-invoice: payment must equal the exact sum of combined invoice open_amounts
+  2. Discount: payment must equal invoice_amount * (1 - discount_pct/100) exactly
+  3. FX: verify usd_amount == foreign_amount * fx_rate within $1 rounding tolerance
+  4. Stale check: count calendar days between check_date and statement_date
+  5. Intercompany net: our_receivable - our_payable must equal payment_amount exactly
 
-        Returns:
-            dict with matched_set, unmatched_payments, unmatched_invoices, summary
-        """
+SPECIAL MATCH STATUSES (outside tiers):
+  BANK_FEE_WRITEOFF   - amount = invoice - ($10 to $50 wire fee), delta <= AUTO_WRITEOFF_THRESHOLD -> auto write-off delta
+  OVERPAYMENT         - amount > all matched invoices -> post invoices, create $X credit on account
+  DUPLICATE_PAYMENT   - same payer + amount within DUPLICATE_WINDOW_DAYS -> hold second occurrence
+  INSTALLMENT         - remittance says "installment N of M" -> partial match
+  LATE_DISCOUNT       - discount taken but outside discount_deadline -> UNAUTHORIZED_DISCOUNT exception
+  PARENT_SUBSIDIARY   - payer is parent entity -> match via parent_customer_id in customer_index
+  THIRD_PARTY_FACTORING - payer is known factoring agent -> match via factoring_agent in customer_index
 
-        matched_set = []
-        matched_txn_ids = set()
-        matched_invoice_ids = set()
+Return ONLY this JSON:
+{
+  "agent": "ReconciliationAgent",
+  "matches": [
+    {
+      "txn_id": "<id>",
+      "match_status": "MATCHED|PARTIAL|DISCOUNT|MULTI_INVOICE|FIFO|BANK_FEE_WRITEOFF|OVERPAYMENT|DUPLICATE_PAYMENT|INSTALLMENT|LATE_DISCOUNT|COMPLIANCE_HOLD|WRONG_ENTITY|DISPUTED_INVOICE_HOLD|POST_DATED_HOLD|STALE_CHECK_RETURN|SUSPENSE_PREPAYMENT|HOLD_EDI_PENDING|INTERCOMPANY_NET|PARENT_SUBSIDIARY|THIRD_PARTY_FACTORING|ALIAS_MATCH|LEGACY_REF|UNMATCHED",
+      "match_tier": "<1-8 or PRE-CHECK-A through PRE-CHECK-H or null>",
+      "confidence_pct": <0-100>,
+      "customer_resolved": "<canonical customer name>",
+      "matched_invoices": [
+        {"invoice_id": "<id>", "applied_amount": <number>, "remaining_open": <number>}
+      ],
+      "transaction_amount": <number>,
+      "total_applied": <number>,
+      "unapplied_amount": <number>,
+      "delta": <number>,
+      "auto_writeoff_delta": <number or 0>,
+      "exception": true|false,
+      "exception_reason": "<reason or null>",
+      "pre_check_triggered": "<A-H or null>"
+    }
+  ],
+  "reconciliation_summary": {
+    "total_transactions": <n>,
+    "matched_exact": <n>,
+    "matched_with_exceptions": <n>,
+    "compliance_holds": <n>,
+    "pre_check_blocks": <n>,
+    "unmatched": <n>,
+    "auto_writeoffs": <n>,
+    "auto_writeoff_total": <number>,
+    "total_cash_received": <number>,
+    "total_applied": <number>,
+    "total_unapplied": <number>
+  }
+}
+After the JSON write exactly: NEXT: MismatchReasoningAgent"""
 
-        # Exact matches (amount + reference)
-        for txn in normalized_txns:
-            if txn["bank_transaction_id"] in matched_txn_ids:
-                continue
+META = {
+    "label": "Reconciliation Engine",
+    "icon": "⚖️",
+    "color": "#f59e0b",
+    "desc": "8-tier matching hierarchy with precise arithmetic verification",
+}
 
-            for inv in ar_invoices:
-                if inv["invoice_number"] in matched_invoice_ids:
-                    continue
-
-                # Check if reference matches
-                if self._is_exact_reference_match(txn, inv):
-                    matched_set.append(
-                        {
-                            "match_type": "EXACT_REFERENCE",
-                            "confidence": 0.99,
-                            "bank_txn_id": txn["bank_transaction_id"],
-                            "invoice_number": inv["invoice_number"],
-                            "amount": txn["amount"],
-                            "customer_txn": txn.get("payer_name_normalized", ""),
-                            "customer_inv": inv.get("customer_name_normalized", ""),
-                            "notes": f"Invoice ref found in remittance",
-                        }
-                    )
-                    matched_txn_ids.add(txn["bank_transaction_id"])
-                    matched_invoice_ids.add(inv["invoice_number"])
-                    break
-
-        # Fuzzy matches (customer name + amount with tolerance)
-        for txn in normalized_txns:
-            if txn["bank_transaction_id"] in matched_txn_ids:
-                continue
-
-            for inv in ar_invoices:
-                if inv["invoice_number"] in matched_invoice_ids:
-                    continue
-
-                # Fuzzy match on customer + amount
-                match_score = self._fuzzy_match_score(txn, inv)
-                if match_score > 0.75:
-                    matched_set.append(
-                        {
-                            "match_type": "FUZZY_MATCH",
-                            "confidence": match_score,
-                            "bank_txn_id": txn["bank_transaction_id"],
-                            "invoice_number": inv["invoice_number"],
-                            "amount": txn["amount"],
-                            "customer_txn": txn.get("payer_name_normalized", ""),
-                            "customer_inv": inv.get("customer_name_normalized", ""),
-                            "notes": f"Customer/amount similarity: {match_score:.2%}",
-                        }
-                    )
-                    matched_txn_ids.add(txn["bank_transaction_id"])
-                    matched_invoice_ids.add(inv["invoice_number"])
-                    break
-
-        # Partial payment matches (amount < invoice balance, within 5%)
-        for txn in normalized_txns:
-            if txn["bank_transaction_id"] in matched_txn_ids:
-                continue
-
-            for inv in ar_invoices:
-                if inv["invoice_number"] in matched_invoice_ids:
-                    continue
-
-                if self._is_partial_payment_match(txn, inv):
-                    matched_set.append(
-                        {
-                            "match_type": "PARTIAL_PAYMENT",
-                            "confidence": 0.85,
-                            "bank_txn_id": txn["bank_transaction_id"],
-                            "invoice_number": inv["invoice_number"],
-                            "amount": txn["amount"],
-                            "customer_txn": txn.get("payer_name_normalized", ""),
-                            "customer_inv": inv.get("customer_name_normalized", ""),
-                            "notes": f"Partial payment of invoice balance",
-                        }
-                    )
-                    matched_txn_ids.add(txn["bank_transaction_id"])
-                    # Don't mark invoice as matched (can have multiple partial payments)
-                    break
-
-        # Unmatched items
-        unmatched_payments = [
-            txn
-            for txn in normalized_txns
-            if txn["bank_transaction_id"] not in matched_txn_ids
-        ]
-        unmatched_invoices = [
-            inv for inv in ar_invoices if inv["invoice_number"] not in matched_invoice_ids
-        ]
-
-        return {
-            "status": "completed",
-            "matched_count": len(matched_set),
-            "matched_set": matched_set,
-            "unmatched_payments": unmatched_payments,
-            "unmatched_invoice_count": len(unmatched_invoices),
-            "unmatched_invoices": unmatched_invoices,
-            "total_matched_amount": sum(m["amount"] for m in matched_set),
-            "summary": {
-                "total_payments": len(normalized_txns),
-                "matched_payments": len(matched_txn_ids),
-                "unmatched_payments": len(unmatched_payments),
-                "match_rate": f"{len(matched_txn_ids) / len(normalized_txns) * 100:.1f}%"
-                if normalized_txns
-                else "0%",
-            },
-        }
-
-    def _is_exact_reference_match(self, txn: Dict, inv: Dict) -> bool:
-        """Check if invoice is referenced in transaction remittance."""
-        invoice_number = inv.get("invoice_number", "")
-        references = txn.get("reference_numbers", [])
-
-        # Normalize invoice number for comparison
-        inv_normalized = invoice_number.replace("-", "").upper()
-
-        for ref in references:
-            ref_normalized = ref.replace("-", "").upper()
-            if inv_normalized in ref_normalized or ref_normalized in inv_normalized:
-                return True
-
-        return False
-
-    def _fuzzy_match_score(self, txn: Dict, inv: Dict) -> float:
-        """Calculate fuzzy match score based on customer and amount."""
-        customer_score = self._name_similarity(
-            txn.get("payer_name_normalized", ""),
-            inv.get("customer_name_normalized", ""),
-        )
-
-        amount_score = self._amount_similarity(
-            txn.get("amount", 0), inv.get("open_balance", 0)
-        )
-
-        # Weighted average: 60% customer, 40% amount
-        return customer_score * 0.6 + amount_score * 0.4
-
-    def _is_partial_payment_match(self, txn: Dict, inv: Dict) -> bool:
-        """Check if transaction is a partial payment of invoice."""
-        txn_amount = txn.get("amount", 0)
-        inv_balance = inv.get("open_balance", 0)
-
-        if txn_amount <= 0 or inv_balance <= 0:
-            return False
-
-        # Check if amount is between 70-100% of invoice balance
-        ratio = txn_amount / inv_balance
-        return 0.7 <= ratio <= 1.0 and self._name_similarity(
-            txn.get("payer_name_normalized", ""),
-            inv.get("customer_name_normalized", ""),
-        ) > 0.6
-
-    def _name_similarity(self, name1: str, name2: str) -> float:
-        """Calculate similarity between two names using SequenceMatcher."""
-        if not name1 or not name2:
-            return 0.0
-
-        # Simple word-based similarity
-        words1 = set(name1.split())
-        words2 = set(name2.split())
-
-        if not words1 or not words2:
-            return 0.0
-
-        intersection = len(words1 & words2)
-        union = len(words1 | words2)
-
-        return intersection / union if union > 0 else 0.0
-
-    def _amount_similarity(self, amount1: float, amount2: float) -> float:
-        """Calculate similarity between two amounts (within 5% tolerance)."""
-        if amount1 <= 0 or amount2 <= 0:
-            return 0.0
-
-        ratio = min(amount1, amount2) / max(amount1, amount2)
-        # Perfect match = 1.0, within 5% = 0.95, etc.
-        return max(0, ratio)
+MODEL_ENV_KEY = "MODEL_RECON_AGENT"
+DEFAULT_MODEL = "gpt-4o"
+MAX_TOKENS = 8192
