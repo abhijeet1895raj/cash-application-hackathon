@@ -4,7 +4,7 @@ A team of 5 AI agents that takes your bank statement and open invoices, figures 
 
 > Built for Microsoft Build AI Hackathon 2026 · Theme 05: Agent Swarms
 
-**Live Demo:** [cash-app-hackathon.vercel.app](https://cash-app-hackathon.vercel.app) · **Architecture Docs:** [vinaygangidi.github.io/cash-application-foundry/architecture.html](https://vinaygangidi.github.io/cash-application-foundry/architecture.html)
+**Live Demo:** [cash-app-hackathon.vercel.app](https://cash-application-hackathon.vercel.app/) · **Architecture Docs:** [abhijeet1895raj.github.io/cash-application-foundry/architecture.html](https://abhijeet1895raj.github.io/cash-application-foundry/architecture.html)
 
 
 ## What problem does this solve?
@@ -179,7 +179,7 @@ You need: **Python 3.11+**, **Node.js 18+**, and **Git**. That is it for demo mo
 ### Step 1: Clone the repo
 
 ```bash
-git clone https://github.com/vinaygangidi/cash-application-foundry.git
+git clone https://github.com/abhijeet1895raj/cash-application-foundry.git
 cd cash-application-foundry
 ```
 
@@ -339,7 +339,7 @@ Every batch the system processes generates labeled training data. After enough r
 
 ## Team
 
-**Vinay Gangidi** | [vinay.gangidi@gmail.com](mailto:vinay.gangidi@gmail.com)
+**Abhijeet Raj** | [abhijeet1895raj@hotmail.com](mailto:abhijeet1895raj@hotmail.com)
 
 
-*Microsoft Build AI Hackathon 2026 · Theme 05: Agent Swarms · [github.com/vinaygangidi/cash-application-foundry](https://github.com/vinaygangidi/cash-application-foundry)*
+*Microsoft Build AI Hackathon 2026 · Theme 05: Agent Swarms · [github.com/abhijeet1895raj/cash-application-foundry](https://github.com/abhijeet1895raj/cash-application-foundry)*
