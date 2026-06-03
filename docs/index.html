@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cash Application Foundry – How It Works</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f4f8; color: #1e293b; }
+    a { color: #3b82f6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .page { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+    /* ── Header ── */
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #3730a3 100%); border-radius: 20px; padding: 52px; color: #fff; margin-bottom: 36px; }
+    .header-tag { font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: #93c5fd; margin-bottom: 12px; }
+    .header h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 14px; }
+    .header h1 span { color: #a5b4fc; }
+    .header-sub { font-size: 16px; color: #c7d2fe; line-height: 1.7; max-width: 720px; margin-bottom: 28px; }
+    .header-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #e0e7ff; border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 600; }
+    .header-links { display: flex; gap: 12px; flex-wrap: wrap; }
+    .header-link { background: #fff; color: #1e3a8a; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .header-link:hover { background: #e0e7ff; text-decoration: none; }
+    .header-link.outline { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+    .header-link.outline:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── Sections ── */
+    .section { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 40px; margin-bottom: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .section-tag { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 6px; }
+    .section-title { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+    .section-sub { font-size: 14px; color: #64748b; margin-bottom: 28px; line-height: 1.7; }
+
+    /* ── Stats ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; }
+    .stat-box .num { font-size: 32px; font-weight: 800; color: #1e3a8a; }
+    .stat-box .label { font-size: 12px; color: #64748b; margin-top: 6px; line-height: 1.4; }
+
+    /* ── What is Cash Application ── */
+    .explainer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    .explainer-card { border-radius: 12px; padding: 24px; }
+    .explainer-card.before { background: #fef2f2; border: 1px solid #fecaca; }
+    .explainer-card.after  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .explainer-card h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .explainer-card.before h3 { color: #dc2626; }
+    .explainer-card.after h3  { color: #16a34a; }
+    .explainer-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .explainer-list li { font-size: 13px; color: #374151; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
+    .explainer-list li .icon { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Process Steps ── */
+    .process-steps { display: flex; flex-direction: column; gap: 0; }
+    .process-step { display: flex; gap: 20px; position: relative; }
+    .process-step:not(:last-child)::after { content: ""; position: absolute; left: 19px; top: 44px; bottom: -10px; width: 2px; background: #e2e8f0; z-index: 0; }
+    .step-num { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; position: relative; z-index: 1; }
+    .step-body { padding-bottom: 28px; flex: 1; }
+    .step-body h3 { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 4px; margin-top: 8px; }
+    .step-body p { font-size: 13px; color: #64748b; line-height: 1.6; }
+    .step-body .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .step-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+
+    /* ── Agent Cards ── */
+    .agents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .agent-card { border-radius: 14px; padding: 24px; border: 1.5px solid; }
+    .agent-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .agent-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .agent-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .agent-name { font-size: 15px; font-weight: 800; color: #0f172a; }
+    .agent-model { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-top: 4px; }
+    .agent-desc { font-size: 13px; color: #475569; line-height: 1.6; margin-bottom: 12px; }
+    .agent-outputs { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .agent-outputs li { font-size: 12px; color: #475569; display: flex; gap: 8px; align-items: flex-start; }
+    .agent-outputs li::before { content: "↳"; font-weight: 700; flex-shrink: 0; }
+
+    /* ── Exception Types ── */
+    .exceptions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .exception-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+    .exception-card h4 { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .exception-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .exception-card ul li { font-size: 12px; color: #64748b; display: flex; gap: 6px; }
+    .exception-card ul li::before { content: "·"; font-weight: 700; color: #94a3b8; flex-shrink: 0; }
+
+    /* ── Flow Diagram ── */
+    .flow { display: flex; align-items: center; gap: 0; overflow-x: auto; padding: 20px 0; }
+    .flow-box { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; text-align: center; min-width: 130px; flex-shrink: 0; }
+    .flow-box .f-icon { font-size: 24px; margin-bottom: 6px; }
+    .flow-box .f-label { font-size: 12px; font-weight: 700; color: #1e293b; }
+    .flow-box .f-sub { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+    .flow-arrow { font-size: 20px; color: #94a3b8; padding: 0 8px; flex-shrink: 0; }
+    .flow-box.highlight { background: #eff6ff; border-color: #3b82f6; }
+    .flow-box.highlight .f-label { color: #1e3a8a; }
+
+    /* ── Results Table ── */
+    .results-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .results-table th { background: #f8fafc; color: #475569; font-weight: 700; text-align: left; padding: 12px 16px; border-bottom: 2px solid #e2e8f0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .results-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #374151; vertical-align: top; }
+    .results-table tr:hover td { background: #f8fafc; }
+    .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .chip.green  { background: #dcfce7; color: #16a34a; }
+    .chip.blue   { background: #dbeafe; color: #1d4ed8; }
+    .chip.purple { background: #f3e8ff; color: #7c3aed; }
+    .chip.orange { background: #ffedd5; color: #c2410c; }
+    .chip.red    { background: #fee2e2; color: #dc2626; }
+
+    /* ── Footer ── */
+    .footer { text-align: center; color: #94a3b8; font-size: 13px; padding: 32px 0; }
+    .footer a { color: #64748b; }
+
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2,1fr); }
+      .explainer-grid { grid-template-columns: 1fr; }
+      .agents-grid { grid-template-columns: 1fr; }
+      .exceptions-grid { grid-template-columns: 1fr 1fr; }
+      .header h1 { font-size: 28px; }
+      .header { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="header-tag">Microsoft Build AI Hackathon 2026 · Theme 05: Agent Swarms</div>
+    <h1>Cash Application Foundry<br><span>How It Works</span></h1>
+    <p class="header-sub">
+      A 5-agent AI pipeline that takes a bank statement and open AR ledger, reconciles every payment to its invoice,
+      and produces ERP-ready posting entries — handling every edge case that used to take a human hours to resolve.
+    </p>
+    <div class="header-badges">
+      <span class="badge">Azure AI Foundry</span>
+      <span class="badge">5-Agent Swarm</span>
+      <span class="badge">Assistants API</span>
+      <span class="badge">Code Interpreter</span>
+      <span class="badge">Real-Time SSE Streaming</span>
+      <span class="badge">FastAPI + Next.js</span>
+    </div>
+    <div class="header-links">
+      <a href="https://cash-application-hackathon.vercel.app" class="header-link">▶ Live Demo</a>
+      <a href="architecture.html" class="header-link outline">Architecture Docs →</a>
+      <a href="https://github.com/abhijeet1895raj/cash-application-hackathon" class="header-link outline">GitHub →</a>
+    </div>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="stats-row">
+    <div class="stat-box"><div class="num">$2.3T</div><div class="label">US AR processed annually — the scale of the problem</div></div>
+    <div class="stat-box"><div class="num">35</div><div class="label">Edge cases resolved in under 60 seconds</div></div>
+    <div class="stat-box"><div class="num">8–10</div><div class="label">Cases per hour for a human AR analyst</div></div>
+    <div class="stat-box"><div class="num">5</div><div class="label">Specialized AI agents in the pipeline</div></div>
+  </div>
+
+  <!-- ── What is Cash Application ── -->
+  <div class="section">
+    <div class="section-tag">Background</div>
+    <div class="section-title">What is Cash Application?</div>
+    <div class="section-sub">
+      Cash Application is the Accounts Receivable process of matching incoming bank payments to open invoices
+      and posting the results to an ERP (SAP, Oracle, NetSuite). It sounds simple — but in practice it's
+      one of the most labor-intensive and error-prone processes in enterprise finance.
+    </div>
+
+    <div class="explainer-grid">
+      <div class="explainer-card before">
+        <h3>❌ The Manual Problem</h3>
+        <ul class="explainer-list">
+          <li><span class="icon">💸</span> Customer pays $29,250 but invoice is $29,500 — was it a freight deduction, a short pay, or a dispute?</li>
+          <li><span class="icon">🏦</span> SWIFT wire shows payer as "GREENFIELD TECH SOLUT" — name is truncated at 35 chars. Who is this?</li>
+          <li><span class="icon">🔄</span> Payment comes from "ACE Capital" but your customer is "Riverside Mfg" — factoring company bought the invoice.</li>
+          <li><span class="icon">⚖️</span> A payment arrives for an invoice in active litigation — posting it would be a compliance violation.</li>
+          <li><span class="icon">💱</span> EUR payment arrives, FX conversion needed — manual calculation required to reconcile the USD amount.</li>
+          <li><span class="icon">⏰</span> An AR analyst handles 8–10 edge cases per hour. These stack up to hundreds daily.</li>
+        </ul>
+      </div>
+      <div class="explainer-card after">
+        <h3>✅ What Our Pipeline Does</h3>
+        <ul class="explainer-list">
+          <li><span class="icon">🏦</span> Parses the bank statement, normalizes truncated names, detects flags like NSF, FX, duplicate payments.</li>
+          <li><span class="icon">📒</span> Enriches the AR ledger with aging buckets, dispute status, collection risk, credit holds.</li>
+          <li><span class="icon">⚖️</span> Uses Code Interpreter to run exact Python arithmetic — verifies multi-invoice sums, FX conversions.</li>
+          <li><span class="icon">🧠</span> AI reasoning agent categorizes every mismatch: deduction, short pay, dispute, factoring, etc.</li>
+          <li><span class="icon">✅</span> Generates ERP-ready GL journal entries and posting batches with full audit trail.</li>
+          <li><span class="icon">⚡</span> Streams results to the browser in real-time via SSE — 35 cases resolved in under 60 seconds.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Reconciliation Process ── -->
+  <div class="section">
+    <div class="section-tag">Core Concept</div>
+    <div class="section-title">The Reconciliation Process</div>
+    <div class="section-sub">
+      Reconciliation means proving that every dollar in the bank statement corresponds to a specific invoice
+      (or set of invoices) in the AR ledger — and documenting exactly why any difference exists.
+    </div>
+
+    <!-- Flow diagram -->
+    <div class="flow" style="margin-bottom: 32px;">
+      <div class="flow-box"><div class="f-icon">🏦</div><div class="f-label">Bank Statement</div><div class="f-sub">Incoming payments</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><div class="f-icon">🔍</div><div class="f-label">Match Attempt</div><div class="f-sub">Fuzzy + exact</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><div class="f-icon">✅</div><div class="f-label">Clean Match</div><div class="f-sub">Post directly</div></div>
+      <div class="flow-arrow">or</div>
+      <div class="flow-box"><div class="f-icon">⚠️</div><div class="f-label">Exception</div><div class="f-sub">Needs reasoning</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><div class="f-icon">🧠</div><div class="f-label">AI Resolution</div><div class="f-sub">Categorize + recommend</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><div class="f-icon">📋</div><div class="f-label">GL Posting</div><div class="f-sub">ERP-ready entries</div></div>
+    </div>
+
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-num" style="background:#eff6ff;color:#1d4ed8;">1</div>
+        <div class="step-body">
+          <h3>Receive &amp; Parse the Bank Statement</h3>
+          <p>The bank delivers a daily statement listing every incoming wire, ACH, and check. Each entry has a date, amount, payer name, and sometimes a remittance reference. The payer name is often truncated (SWIFT limits to 35 chars), misspelled, or belongs to a third party like a factoring company.</p>
+          <div class="tags">
+            <span class="step-tag" style="background:#dbeafe;color:#1d4ed8;">BankStatementIntelligenceAgent</span>
+          </div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num" style="background:#f0fdf4;color:#16a34a;">2</div>
+        <div class="step-body">
+          <h3>Load &amp; Enrich the Open AR Ledger</h3>
+          <p>The open AR ledger lists every unpaid invoice: customer, amount, due date, and aging. The AR agent enriches this with risk flags — which invoices are disputed, in legal hold, past due, on credit hold, or linked to a factoring arrangement.</p>
+          <div class="tags">
+            <span class="step-tag" style="background:#dcfce7;color:#16a34a;">ARLedgerAgent</span>
+          </div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num" style="background:#fffbeb;color:#d97706;">3</div>
+        <div class="step-body">
+          <h3>Match Payments to Invoices</h3>
+          <p>Each bank payment is matched against open invoices using fuzzy name matching, remittance reference detection, and exact arithmetic. Multi-invoice payments are split across invoices. The Code Interpreter runs Python to verify that the numbers add up exactly — critical for catching rounding errors and FX discrepancies.</p>
+          <div class="tags">
+            <span class="step-tag" style="background:#fef3c7;color:#d97706;">ReconciliationAgent</span>
+            <span class="step-tag" style="background:#dbeafe;color:#1d4ed8;">Code Interpreter</span>
+          </div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num" style="background:#fef2f2;color:#dc2626;">4</div>
+        <div class="step-body">
+          <h3>Reason About Every Mismatch</h3>
+          <p>Payments that don't match cleanly go to the reasoning agent. It categorizes each exception — short pay, deduction, wrong entity, compliance hold, FX variance, duplicate — and recommends an action: post, write off, hold, escalate, or request remittance. It shows its full reasoning for every decision.</p>
+          <div class="tags">
+            <span class="step-tag" style="background:#fee2e2;color:#dc2626;">MismatchReasoningAgent</span>
+          </div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num" style="background:#f5f3ff;color:#7c3aed;">5</div>
+        <div class="step-body">
+          <h3>Generate ERP Posting Entries</h3>
+          <p>The final agent converts all matched and resolved payments into GL journal entries formatted for SAP, Oracle, or NetSuite. Each entry includes the debit/credit accounts, cost center, posting date, and a human-readable narrative. Flagged items are separated into a work queue for human review.</p>
+          <div class="tags">
+            <span class="step-tag" style="background:#ede9fe;color:#7c3aed;">CashPostingAgent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5 Agents ── -->
+  <div class="section">
+    <div class="section-tag">The Pipeline</div>
+    <div class="section-title">5 Specialized AI Agents</div>
+    <div class="section-sub">Each agent does one job well and hands structured output to the next. No monolithic prompt — each specialist runs on the model best suited to its task.</div>
+
+    <div class="agents-grid">
+      <div class="agent-card" style="background:#eff6ff;border-color:#bfdbfe;">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:#dbeafe;">🏦</div>
+          <div>
+            <div class="agent-num" style="color:#3b82f6;">Agent 1</div>
+            <div class="agent-name">Bank Statement Intelligence</div>
+            <span class="agent-model" style="background:#d1fae5;color:#059669;">gpt-4o-mini</span>
+          </div>
+        </div>
+        <p class="agent-desc">Parses raw bank statement JSON, normalizes truncated payer names, extracts remittance references from wire memos, and flags anomalies before any matching begins.</p>
+        <ul class="agent-outputs">
+          <li>Normalized transaction list with resolved payer names</li>
+          <li>Flags: NSF, duplicate, post-dated, stale check, FX, SWIFT truncation</li>
+          <li>Extracted invoice references from payment memos</li>
+        </ul>
+      </div>
+
+      <div class="agent-card" style="background:#f0fdf4;border-color:#bbf7d0;">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:#dcfce7;">📒</div>
+          <div>
+            <div class="agent-num" style="color:#10b981;">Agent 2</div>
+            <div class="agent-name">Open AR Ledger</div>
+            <span class="agent-model" style="background:#d1fae5;color:#059669;">gpt-4o-mini</span>
+          </div>
+        </div>
+        <p class="agent-desc">Reads the AR ledger and enriches every open invoice with aging analysis, collection risk scores, dispute status, credit hold flags, and factoring arrangements.</p>
+        <ul class="agent-outputs">
+          <li>Invoices enriched with aging buckets (current, 30, 60, 90+ days)</li>
+          <li>Risk flags: disputed, in-litigation, credit hold, OFAC screening</li>
+          <li>Factoring and intercompany relationship map</li>
+        </ul>
+      </div>
+
+      <div class="agent-card" style="background:#fffbeb;border-color:#fde68a;">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:#fef3c7;">⚖️</div>
+          <div>
+            <div class="agent-num" style="color:#f59e0b;">Agent 3</div>
+            <div class="agent-name">Reconciliation Engine</div>
+            <span class="agent-model" style="background:#dbeafe;color:#2563eb;">gpt-4o + Code Interpreter</span>
+          </div>
+        </div>
+        <p class="agent-desc">The core matching engine. Uses fuzzy name matching and reference detection to link payments to invoices, then invokes Code Interpreter to run Python arithmetic for exact verification.</p>
+        <ul class="agent-outputs">
+          <li>Matched, partial-match, and unmatched transaction classifications</li>
+          <li>Python-verified arithmetic for multi-invoice splits and FX amounts</li>
+          <li>Confidence scores and match reasoning for every transaction</li>
+        </ul>
+      </div>
+
+      <div class="agent-card" style="background:#fef2f2;border-color:#fecaca;">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:#fee2e2;">🧠</div>
+          <div>
+            <div class="agent-num" style="color:#ef4444;">Agent 4</div>
+            <div class="agent-name">Mismatch Reasoning</div>
+            <span class="agent-model" style="background:#ede9fe;color:#7c3aed;">gpt-4o</span>
+          </div>
+        </div>
+        <p class="agent-desc">Takes every exception from the reconciliation engine and reasons through it. Categorizes the mismatch type, identifies root cause, and recommends the correct action with full explainability.</p>
+        <ul class="agent-outputs">
+          <li>Exception category: deduction, dispute, short pay, FX variance, wrong entity</li>
+          <li>Recommended action: post, write-off, hold, escalate, request remittance</li>
+          <li>Plain-English reasoning narrative for each decision</li>
+        </ul>
+      </div>
+
+      <div class="agent-card" style="background:#f5f3ff;border-color:#ddd6fe;grid-column:1/-1;">
+        <div class="agent-header">
+          <div class="agent-icon" style="background:#ede9fe;">✅</div>
+          <div>
+            <div class="agent-num" style="color:#8b5cf6;">Agent 5</div>
+            <div class="agent-name">Cash Posting</div>
+            <span class="agent-model" style="background:#dbeafe;color:#2563eb;">gpt-4o</span>
+          </div>
+        </div>
+        <p class="agent-desc">Converts all reconciled payments into ERP-ready GL journal entries. Separates clean postings from work queue items requiring human review. Produces a complete audit trail with debit/credit accounts, cost centers, and posting narratives.</p>
+        <ul class="agent-outputs">
+          <li>GL journal entries: debit AR control, credit cash, with cost center and posting date</li>
+          <li>Work queue: flagged items needing human review with recommended action pre-filled</li>
+          <li>Summary report: total posted, total held, total exceptions, DSO impact estimate</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Exception Types ── -->
+  <div class="section">
+    <div class="section-tag">Edge Cases</div>
+    <div class="section-title">Exception Categories Handled</div>
+    <div class="section-sub">The pipeline handles every exception type that AR teams encounter in real enterprise environments — the same scenarios covered across 10 sample datasets.</div>
+
+    <div class="exceptions-grid">
+      <div class="exception-card">
+        <h4>💱 FX &amp; Multi-Currency</h4>
+        <ul>
+          <li>EUR, GBP, CAD payments against USD invoices</li>
+          <li>FX rate verification via Code Interpreter</li>
+          <li>Rounding variance write-off rules</li>
+        </ul>
+      </div>
+      <div class="exception-card">
+        <h4>🏢 Entity &amp; Identity</h4>
+        <ul>
+          <li>SWIFT name truncation (35-char limit)</li>
+          <li>DBA and trade name mismatches</li>
+          <li>Post-acquisition name changes</li>
+          <li>Parent paying for subsidiary</li>
+        </ul>
+      </div>
+      <div class="exception-card">
+        <h4>💰 Amount Discrepancies</h4>
+        <ul>
+          <li>Early-pay discounts (authorized &amp; unauthorized)</li>
+          <li>Freight and damage deductions</li>
+          <li>Short pays and overpayments</li>
+          <li>Multi-invoice consolidated payments</li>
+        </ul>
+      </div>
+      <div class="exception-card">
+        <h4>🔗 Third-Party Payments</h4>
+        <ul>
+          <li>Factoring company remittances</li>
+          <li>Intercompany netting arrangements</li>
+          <li>Cross-border entity structures</li>
+          <li>Third-party payment processors</li>
+        </ul>
+      </div>
+      <div class="exception-card">
+        <h4>⏰ Timing Issues</h4>
+        <ul>
+          <li>Post-dated checks</li>
+          <li>Stale checks (&gt;180 days)</li>
+          <li>NSF (non-sufficient funds) returns</li>
+          <li>Prepayments against future invoices</li>
+        </ul>
+      </div>
+      <div class="exception-card">
+        <h4>🔴 Compliance &amp; Legal</h4>
+        <ul>
+          <li>OFAC sanctions screening triggers</li>
+          <li>Disputed invoices in litigation</li>
+          <li>Wrong legal entity posting risk</li>
+          <li>Payment against bankruptcy-stayed invoices</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sample Datasets ── -->
+  <div class="section">
+    <div class="section-tag">Test Coverage</div>
+    <div class="section-title">10 Sample Datasets</div>
+    <div class="section-sub">Each dataset is purpose-built to stress-test a specific category of exceptions. Run any of them from the live demo.</div>
+
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Dataset Name</th>
+          <th>Focus Area</th>
+          <th>Complexity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>01</td><td>Clean Batch</td><td>Exact and near-exact matches</td><td><span class="chip green">Low</span></td></tr>
+        <tr><td>02</td><td>Deductions Heavy</td><td>Freight, damage, unauthorized deductions</td><td><span class="chip blue">Medium</span></td></tr>
+        <tr><td>03</td><td>Compliance &amp; Legal Risk</td><td>OFAC, sanctions, disputed invoices</td><td><span class="chip red">High</span></td></tr>
+        <tr><td>04</td><td>Multi-Entity</td><td>Parent/subsidiary, factoring agents</td><td><span class="chip purple">High</span></td></tr>
+        <tr><td>05</td><td>International FX</td><td>EUR, GBP, CAD payments</td><td><span class="chip blue">Medium</span></td></tr>
+        <tr><td>06</td><td>Timing Issues</td><td>Post-dated, stale checks, NSF returns</td><td><span class="chip orange">Medium</span></td></tr>
+        <tr><td>07</td><td>Remittance Problems</td><td>Missing, vague, EDI remittance</td><td><span class="chip blue">Medium</span></td></tr>
+        <tr><td>08</td><td>Overpayments &amp; Credits</td><td>Overpayments, credit memo applications</td><td><span class="chip blue">Medium</span></td></tr>
+        <tr><td>09</td><td>Identity &amp; Name Issues</td><td>SWIFT truncation, DBA, alias names</td><td><span class="chip purple">High</span></td></tr>
+        <tr><td>10</td><td>Enterprise Mixed Batch</td><td>All exception types combined</td><td><span class="chip red">Very High</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Tech Stack ── -->
+  <div class="section">
+    <div class="section-tag">Technology</div>
+    <div class="section-title">How It's Built</div>
+    <div class="section-sub">Built on Azure AI Foundry with a FastAPI backend and Next.js frontend. All agent outputs stream to the browser in real-time via Server-Sent Events.</div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;">
+        <div style="font-size:20px;margin-bottom:8px;">🧠</div>
+        <div style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:6px;">Azure AI Foundry</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.6;">Assistants API with Code Interpreter for the Reconciliation agent. GPT-4o and GPT-4o-mini for reasoning and parsing agents.</div>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;">
+        <div style="font-size:20px;margin-bottom:8px;">⚡</div>
+        <div style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:6px;">FastAPI + SSE</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.6;">Python backend with async streaming via Server-Sent Events. Keepalive pump prevents Railway proxy timeouts during long agent runs.</div>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;">
+        <div style="font-size:20px;margin-bottom:8px;">🌐</div>
+        <div style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:6px;">Next.js + Vercel</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.6;">React frontend with real-time SSE rendering. Each agent streams tokens as they arrive — no waiting for the full pipeline to finish.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built for <strong>Microsoft Build AI Hackathon 2026</strong> · Theme 05: Agent Swarms ·
+    <a href="https://github.com/abhijeet1895raj/cash-application-hackathon">github.com/abhijeet1895raj/cash-application-hackathon</a>
+  </div>
+
+</div>
+</body>
+</html>
