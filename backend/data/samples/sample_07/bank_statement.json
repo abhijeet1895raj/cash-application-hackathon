@@ -1,0 +1,96 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "PNC Bank",
+  "account": "****6789",
+  "company": "Summit Distribution LLC",
+  "transactions": [
+    {
+      "txn_id": "TXN-07-001",
+      "date": "2024-07-03",
+      "amount": 23500.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "GREENFIELD PARTS INC",
+      "bank_reference": "WIRE20240703001",
+      "remittance_text": "",
+      "note": "NO REMITTANCE: Empty reference. Match by customer name + FIFO to oldest open invoice."
+    },
+    {
+      "txn_id": "TXN-07-002",
+      "date": "2024-07-06",
+      "amount": 41000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "LAKEWOOD SUPPLY CO",
+      "bank_reference": "ACH20240706002",
+      "remittance_text": "June invoices",
+      "note": "VAGUE REMITTANCE: 'June invoices' has no specific invoice numbers. Match by amount to open June invoices."
+    },
+    {
+      "txn_id": "TXN-07-003",
+      "date": "2024-07-09",
+      "amount": 28750.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "IRONBRIDGE ENTERPRISES",
+      "bank_reference": "WIRE20240709003",
+      "remittance_text": "LEGACY-INV-2024-0087",
+      "note": "LEGACY INVOICE REF: Customer used old ERP invoice number LEGACY-INV-2024-0087. Cross-reference to current INV-07-003."
+    },
+    {
+      "txn_id": "TXN-07-004",
+      "date": "2024-07-12",
+      "amount": 55000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "COASTAL TRADE CORP",
+      "bank_reference": "ACH20240712004",
+      "remittance_text": "EDI 820 pending",
+      "note": "EDI PENDING: Customer sends EDI 820 remittance file separately. Do not FIFO match. Hold for EDI file expected within 2 business days."
+    },
+    {
+      "txn_id": "TXN-07-005",
+      "date": "2024-07-15",
+      "amount": 19200.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "HILLSIDE PRODUCTS LLC",
+      "bank_reference": "ACH20240715005",
+      "remittance_text": "PO-5533 PO-5541",
+      "note": "PO REFERENCE: Customer pays by PO numbers. Match to invoices with po_reference PO-5533 and PO-5541."
+    },
+    {
+      "txn_id": "TXN-07-006",
+      "date": "2024-07-18",
+      "amount": 38400.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "MERIDIAN HARDWARE GROUP",
+      "bank_reference": "WIRE20240718006",
+      "remittance_text": "See attached remittance advice",
+      "note": "VAGUE: 'See attached' with no specifics. Amount-based match to open invoices for this customer."
+    },
+    {
+      "txn_id": "TXN-07-007",
+      "date": "2024-07-21",
+      "amount": 31500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "PINNACLE SUPPLY INC",
+      "bank_reference": "ACH20240721007",
+      "remittance_text": "Old ref: SAP-2024-112-A",
+      "note": "OLD ERP REF: Customer using SAP legacy numbering. Cross-reference via legacy map to INV-07-007."
+    },
+    {
+      "txn_id": "TXN-07-008",
+      "date": "2024-07-25",
+      "amount": 44500.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "TRIDENT MATERIALS CORP",
+      "bank_reference": "WIRE20240725008",
+      "remittance_text": "INV-07-008",
+      "note": "Clean exact match: invoice number provided, exact amount"
+    }
+  ]
+}

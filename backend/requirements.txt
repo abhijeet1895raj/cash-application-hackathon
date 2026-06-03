@@ -1,0 +1,8 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-dotenv==1.0.1
+python-multipart==0.0.12
+openai>=1.50.0
+azure-identity==1.19.0
+azure-storage-blob>=12.19.0
+azure-monitor-opentelemetry>=1.6.0

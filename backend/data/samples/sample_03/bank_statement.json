@@ -1,0 +1,74 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "Citibank",
+  "account": "****9012",
+  "company": "Global Imports Corp",
+  "transactions": [
+    {
+      "txn_id": "TXN-03-001",
+      "date": "2024-07-07",
+      "amount": 125000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "ZARKON TRADING FZE",
+      "bank_reference": "WIRE20240707001",
+      "remittance_text": "INV-03-001",
+      "note": "COMPLIANCE HOLD: Payer name matches OFAC SDN watchlist. DO NOT POST. Escalate to Compliance Officer immediately."
+    },
+    {
+      "txn_id": "TXN-03-002",
+      "date": "2024-07-09",
+      "amount": 48000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "REDSTONE MATERIALS LLC",
+      "bank_reference": "ACH20240709002",
+      "remittance_text": "INV-03-002",
+      "note": "DISPUTED INVOICE: INV-03-002 is under active dispute filed 2024-06-15. Do not auto-post. Route to Credit Manager."
+    },
+    {
+      "txn_id": "TXN-03-003",
+      "date": "2024-07-11",
+      "amount": 72000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "BLUEROCK ENTERPRISES INC",
+      "bank_reference": "WIRE20240711003",
+      "remittance_text": "INV-03-003 Global Imports North",
+      "note": "WRONG ENTITY: Remittance references Global Imports North LLC (separate legal entity). Payment cannot be posted here. Return to sender or redirect."
+    },
+    {
+      "txn_id": "TXN-03-004",
+      "date": "2024-07-14",
+      "amount": 33500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "IRONCLAD SUPPLY CO",
+      "bank_reference": "ACH20240714004",
+      "remittance_text": "INV-03-004",
+      "note": "LEGAL HOLD: INV-03-004 is under court freeze pending litigation. Hold payment in suspense GL 2099."
+    },
+    {
+      "txn_id": "TXN-03-005",
+      "date": "2024-07-16",
+      "amount": 22000.0,
+      "currency": "USD",
+      "payment_type": "ACH_RETURN",
+      "payer_raw": "NSF RETURN - MERIDIAN SUPPLY",
+      "bank_reference": "RETURN20240716005",
+      "remittance_text": "Return of ACH20240620001 - NSF",
+      "note": "NSF RETURN: Prior ACH of $22,000 on 2024-06-20 for INV-03-005 bounced. Reverse prior application, reopen invoice, notify customer."
+    },
+    {
+      "txn_id": "TXN-03-006",
+      "date": "2024-07-22",
+      "amount": 29750.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "CLEARBROOK SOLUTIONS",
+      "bank_reference": "ACH20240722006",
+      "remittance_text": "INV-03-006",
+      "note": "Clean payment: exact match, no issues"
+    }
+  ]
+}

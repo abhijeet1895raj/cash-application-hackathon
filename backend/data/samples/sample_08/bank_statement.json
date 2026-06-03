@@ -1,0 +1,96 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "TD Bank",
+  "account": "****4567",
+  "company": "Harbor Logistics Corp",
+  "transactions": [
+    {
+      "txn_id": "TXN-08-001",
+      "date": "2024-07-04",
+      "amount": 52000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "BAYSHORE FREIGHT LLC",
+      "bank_reference": "WIRE20240704001",
+      "remittance_text": "INV-08-001",
+      "note": "OVERPAYMENT: Invoice is $48,000. Payment is $52,000. $4,000 excess becomes credit on account for future invoices."
+    },
+    {
+      "txn_id": "TXN-08-002",
+      "date": "2024-07-07",
+      "amount": 35500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "PORTSIDE TRADING CO",
+      "bank_reference": "ACH20240707002",
+      "remittance_text": "INV-08-002 less CM-08-001 credit memo",
+      "note": "CREDIT NET: Invoice $38,000 minus existing credit memo $2,500 = net payment $35,500. Customer netting credit memo against invoice."
+    },
+    {
+      "txn_id": "TXN-08-003",
+      "date": "2024-07-10",
+      "amount": 75000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "ANCHOR INDUSTRIES INC",
+      "bank_reference": "WIRE20240710003",
+      "remittance_text": "PREPAYMENT for order PO-8850 Q3 production run",
+      "note": "PREPAYMENT ADVANCE: No invoice yet. Customer prepaying for Q3 production. Post to GL 2050 Unearned Revenue. Create advance record."
+    },
+    {
+      "txn_id": "TXN-08-004",
+      "date": "2024-07-13",
+      "amount": 91500.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "COASTAL CARGO GROUP",
+      "bank_reference": "WIRE20240713004",
+      "remittance_text": "INV-08-003",
+      "note": "LARGE OVERPAYMENT: Invoice is $85,000. Payment is $91,500. $6,500 excess. Notify customer. High risk tier for treasury review."
+    },
+    {
+      "txn_id": "TXN-08-005",
+      "date": "2024-07-17",
+      "amount": 27300.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "DOCKSIDE MATERIALS LLC",
+      "bank_reference": "ACH20240717005",
+      "remittance_text": "INV-08-004 less CM-08-002",
+      "note": "CREDIT NET: Invoice $31,000 minus credit memo $3,700 = net $27,300. Exact credit-net match."
+    },
+    {
+      "txn_id": "TXN-08-006",
+      "date": "2024-07-21",
+      "amount": 22000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "INLET SUPPLY GROUP",
+      "bank_reference": "ACH20240721006",
+      "remittance_text": "INV-08-005",
+      "note": "Exact match: clean payment"
+    },
+    {
+      "txn_id": "TXN-08-007",
+      "date": "2024-07-24",
+      "amount": 44000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "TIDEWATER CORP",
+      "bank_reference": "WIRE20240724007",
+      "remittance_text": "INV-08-006",
+      "note": "Exact match: clean payment"
+    },
+    {
+      "txn_id": "TXN-08-008",
+      "date": "2024-07-27",
+      "amount": 16800.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "SHORELINE PRODUCTS INC",
+      "bank_reference": "ACH20240727008",
+      "remittance_text": "INV-08-007",
+      "note": "SMALL OVERPAYMENT: Invoice $16,500. Paid $16,800. Delta $300. Above auto write-off threshold. Post invoice, carry $300 as credit on account."
+    }
+  ]
+}

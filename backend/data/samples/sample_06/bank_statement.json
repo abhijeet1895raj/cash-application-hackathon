@@ -1,0 +1,96 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "US Bank",
+  "account": "****2345",
+  "company": "Midwest Wholesale Corp",
+  "transactions": [
+    {
+      "txn_id": "TXN-06-001",
+      "date": "2024-08-15",
+      "amount": 41000.0,
+      "currency": "USD",
+      "payment_type": "CHECK",
+      "payer_raw": "RIDGELINE MATERIALS INC",
+      "bank_reference": "CHECK-004821",
+      "remittance_text": "INV-06-001",
+      "note": "POST-DATED CHECK: Check date is 2024-08-15, which is after statement date 2024-07-31. Hold file. Re-process on check date."
+    },
+    {
+      "txn_id": "TXN-06-002",
+      "date": "2024-01-10",
+      "amount": 18750.0,
+      "currency": "USD",
+      "payment_type": "CHECK",
+      "payer_raw": "OAKDALE HARDWARE LLC",
+      "bank_reference": "CHECK-003317",
+      "remittance_text": "INV-06-002",
+      "note": "STALE CHECK: Check date 2024-01-10 is 202 days before statement date 2024-07-31 (over 180 days). Cannot negotiate. Return to issuer."
+    },
+    {
+      "txn_id": "TXN-06-003",
+      "date": "2024-07-02",
+      "amount": 22000.0,
+      "currency": "USD",
+      "payment_type": "ACH_RETURN",
+      "payer_raw": "NSF RETURN - PINECREST SUPPLY",
+      "bank_reference": "RETURN20240702003",
+      "remittance_text": "Return of ACH20240605003 NSF - insufficient funds",
+      "note": "NSF RETURN: Prior ACH of $22,000 on 2024-06-05 bounced. Reverse previous application of INV-06-003 and reopen invoice."
+    },
+    {
+      "txn_id": "TXN-06-004",
+      "date": "2024-07-08",
+      "amount": 34500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "SUMMIT WHOLESALE INC",
+      "bank_reference": "ACH20240708004",
+      "remittance_text": "INV-06-004",
+      "note": "First occurrence of payment. VALID."
+    },
+    {
+      "txn_id": "TXN-06-005",
+      "date": "2024-07-15",
+      "amount": 34500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "SUMMIT WHOLESALE INC",
+      "bank_reference": "ACH20240715005",
+      "remittance_text": "INV-06-004",
+      "note": "DUPLICATE PAYMENT: Same payer Summit Wholesale, same amount $34,500, same invoice INV-06-004, within 30-day window. Hold second occurrence. Notify customer."
+    },
+    {
+      "txn_id": "TXN-06-006",
+      "date": "2024-07-11",
+      "amount": 15600.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "VALLEY DISTRIBUTION LLC",
+      "bank_reference": "ACH20240711006",
+      "remittance_text": "INV-06-005 installment 1 of 4",
+      "note": "Installment payment: $62,400 total / 4 installments = $15,600. First installment."
+    },
+    {
+      "txn_id": "TXN-06-007",
+      "date": "2024-07-19",
+      "amount": 50000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "CENTRAL COMMERCE GROUP",
+      "bank_reference": "WIRE20240719007",
+      "remittance_text": "PREPAYMENT order PO-7751 expected August",
+      "note": "PREPAYMENT ADVANCE: No invoice exists. Customer paying ahead of order PO-7751. Post to GL 2050 Unearned Revenue."
+    },
+    {
+      "txn_id": "TXN-06-008",
+      "date": "2024-07-24",
+      "amount": 29000.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "NORTHERN PARTS CO",
+      "bank_reference": "ACH20240724008",
+      "remittance_text": "INV-06-006",
+      "note": "Clean exact match payment"
+    }
+  ]
+}

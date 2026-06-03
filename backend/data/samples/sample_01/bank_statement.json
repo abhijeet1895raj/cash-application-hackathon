@@ -1,0 +1,96 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "Bank of America",
+  "account": "****1234",
+  "company": "Meridian Tech Solutions Inc.",
+  "transactions": [
+    {
+      "txn_id": "TXN-01-001",
+      "date": "2024-07-05",
+      "amount": 18500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "BRIGHTWAY SYSTEMS INC",
+      "bank_reference": "ACH20240705001",
+      "remittance_text": "INV-01-001",
+      "note": "Exact match: correct amount, correct invoice reference"
+    },
+    {
+      "txn_id": "TXN-01-002",
+      "date": "2024-07-08",
+      "amount": 42000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "CASCADE INDUSTRIAL LLC",
+      "bank_reference": "WIRE20240708001",
+      "remittance_text": "INV-01-002 INV-01-003",
+      "note": "Multi-invoice: $18,000 + $24,000 = $42,000 exact"
+    },
+    {
+      "txn_id": "TXN-01-003",
+      "date": "2024-07-10",
+      "amount": 31850.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "DELTA COMPONENTS CORP",
+      "bank_reference": "ACH20240710003",
+      "remittance_text": "INV-01-004 2% early pay discount taken",
+      "note": "Early pay discount: $32,500 * 0.98 = $31,850. Paid day 7, within 10-day window"
+    },
+    {
+      "txn_id": "TXN-01-004",
+      "date": "2024-07-12",
+      "amount": 9975.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "EASTERN SUPPLY GROUP",
+      "bank_reference": "WIRE20240712004",
+      "remittance_text": "INV-01-005",
+      "note": "Bank wire fee: invoice $10,000, paid $9,975, delta $25 = auto write-off"
+    },
+    {
+      "txn_id": "TXN-01-005",
+      "date": "2024-07-15",
+      "amount": 55000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "FRONTIER LOGISTICS INC",
+      "bank_reference": "WIRE20240715005",
+      "remittance_text": "",
+      "note": "No remittance: FIFO match to oldest open invoice for this customer"
+    },
+    {
+      "txn_id": "TXN-01-006",
+      "date": "2024-07-18",
+      "amount": 27300.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "GRANITE PRODUCTS CO",
+      "bank_reference": "ACH20240718006",
+      "remittance_text": "PO-9901",
+      "note": "PO reference: customer pays by PO number, not invoice number"
+    },
+    {
+      "txn_id": "TXN-01-007",
+      "date": "2024-07-22",
+      "amount": 13400.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "HARBOR TECH SOLUTIONS",
+      "bank_reference": "ACH20240722007",
+      "remittance_text": "INV-01-008 installment 2 of 3",
+      "note": "Installment: $40,200 / 3 = $13,400 each. First already applied."
+    },
+    {
+      "txn_id": "TXN-01-008",
+      "date": "2024-07-25",
+      "amount": 8750.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "INLAND DISTRIBUTORS LLC",
+      "bank_reference": "ACH20240725008",
+      "remittance_text": "INV-01-009",
+      "note": "Exact match: small amount, clean payment"
+    }
+  ]
+}

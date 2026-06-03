@@ -1,0 +1,96 @@
+{
+  "statement_date": "2024-07-31",
+  "bank": "KeyBank",
+  "account": "****8901",
+  "company": "TechMerge Industries Inc.",
+  "transactions": [
+    {
+      "txn_id": "TXN-09-001",
+      "date": "2024-07-04",
+      "amount": 36500.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "BLACKSTONE MANUFACTURING",
+      "bank_reference": "SWIFT20240704001",
+      "remittance_text": "INV-09-001",
+      "note": "SWIFT 35-CHAR TRUNCATION: Actual customer name is Blackstone Manufacturing Solutions Corp (38 chars). SWIFT cut it at 35 to BLACKSTONE MANUFACTURING. Match via alias table."
+    },
+    {
+      "txn_id": "TXN-09-002",
+      "date": "2024-07-07",
+      "amount": 24800.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "RJ BUILDING SUPPLIES",
+      "bank_reference": "ACH20240707002",
+      "remittance_text": "INV-09-002",
+      "note": "DBA NAME: RJ Building Supplies is the registered DBA of Robertson-Jenkins Construction Materials Inc. Alias registry match."
+    },
+    {
+      "txn_id": "TXN-09-003",
+      "date": "2024-07-10",
+      "amount": 58000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "AXIOM TECHNOLOGIES INC",
+      "bank_reference": "WIRE20240710003",
+      "remittance_text": "INV-09-003",
+      "note": "POST-ACQUISITION: Axiom Technologies Inc. was acquired by NovaTech Solutions in March 2024. Still paying under old name. Alias registry maps to CUST-09-003."
+    },
+    {
+      "txn_id": "TXN-09-004",
+      "date": "2024-07-12",
+      "amount": 19200.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "CONTINENTAL WIRE & CABLE",
+      "bank_reference": "ACH20240712004",
+      "remittance_text": "INV-09-004",
+      "note": "ALIAS MATCH: Continental Wire & Cable is a known alias for Global Cable Systems LLC in our alias registry. High-confidence match."
+    },
+    {
+      "txn_id": "TXN-09-005",
+      "date": "2024-07-15",
+      "amount": 43700.0,
+      "currency": "USD",
+      "payment_type": "SWIFT",
+      "payer_raw": "EUROTECH COMPONENTS",
+      "bank_reference": "SWIFT20240715005",
+      "remittance_text": "INV-09-005",
+      "note": "SWIFT 35-CHAR TRUNCATION: Full name is EuroTech Components and Assemblies GmbH (42 chars). SWIFT truncated to EUROTECH COMPONENTS. Match via alias."
+    },
+    {
+      "txn_id": "TXN-09-006",
+      "date": "2024-07-18",
+      "amount": 31100.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "METRO FASTENERS LLC",
+      "bank_reference": "ACH20240718006",
+      "remittance_text": "INV-09-006",
+      "note": "DBA NAME: Metro Fasteners LLC is the DBA of Metropolitan Industrial Fasteners Corporation. Alias match with >75% fuzzy similarity."
+    },
+    {
+      "txn_id": "TXN-09-007",
+      "date": "2024-07-22",
+      "amount": 27500.0,
+      "currency": "USD",
+      "payment_type": "ACH",
+      "payer_raw": "HIGHLAND ELEC SUPPLY CO",
+      "bank_reference": "ACH20240722007",
+      "remittance_text": "INV-09-007",
+      "note": "FUZZY MATCH: 'HIGHLAND ELEC SUPPLY CO' matches 'Highland Electrical Supply Company' at 87% similarity. Alias resolve with high confidence."
+    },
+    {
+      "txn_id": "TXN-09-008",
+      "date": "2024-07-26",
+      "amount": 51000.0,
+      "currency": "USD",
+      "payment_type": "WIRE",
+      "payer_raw": "MERIDIAN GLASS PRODUCTS",
+      "bank_reference": "WIRE20240726008",
+      "remittance_text": "INV-09-008",
+      "note": "Exact name match: clean payment"
+    }
+  ]
+}
